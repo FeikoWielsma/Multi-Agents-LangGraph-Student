@@ -1,0 +1,14 @@
+.env
+**/__pycache__/
+**/.venv/
+**/.ipynb_checkpoints/
+**/*.db
+**/.langgraph_api/
+**/workspace/
+exercises/*.py
+exercises/*.log
+exercises/*/
+solutions/*.py
+solutions/*.log
+solutions/*/
+notebooks/**/langgraph.json

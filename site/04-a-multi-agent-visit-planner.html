@@ -1,0 +1,1841 @@
+<!doctype html>
+<html lang="en" class="no-js" data-page="04-a-multi-agent-visit-planner" data-storage-prefix="ari520-site:" data-course-title="Multi Agents with LangGraph">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exercise 4 : A Multi-Agent Visit Planner</title>
+<meta name="color-scheme" content="light dark">
+<script>(function(){var d=document.documentElement;d.className=d.className.replace('no-js','js');try{var t=JSON.parse(localStorage.getItem("ari520-site:theme"));if(typeof t==='string'&&t!=='auto'&&/^[a-z0-9]+$/.test(t))d.setAttribute('data-theme',t);}catch(e){}})();</script>
+<style>
+/* Exercise site : one stylesheet, inlined into every page by build-site.ts.
+   Colours are tokens on :root. Without data-theme on <html> the page follows the system's
+   light or dark mode ; the theme picker sets data-theme, and the themes are at the end. */
+
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #eef1f6;
+  --text: #182130;
+  --muted: #566276;
+  --border: #d9dee7;
+  --accent: #1d4f91;
+  --accent-soft: #e2ecf8;
+  --accent-text: #ffffff;
+  --hint: #7a5200;
+  --hint-bg: #fff6df;
+  --hint-border: #ecd398;
+  --ok: #17663f;
+  --ok-bg: #e5f3ea;
+  --ok-border: #b3dcc3;
+  --sol: #55399a;
+  --sol-bg: #efeafb;
+  --sol-border: #cfc3ec;
+  --code-bg: #f6f8fa;
+  --code-border: #dfe4ea;
+  --shadow: 0 1px 2px rgb(20 30 50 / 6%), 0 4px 14px rgb(20 30 50 / 5%);
+  --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #0e131a;
+    --surface: #161c26;
+    --surface-2: #1d2531;
+    --text: #e6eaf1;
+    --muted: #9aa6b8;
+    --border: #2b3443;
+    --accent: #7fb2f0;
+    --accent-soft: #1a2a42;
+    --accent-text: #0e131a;
+    --hint: #ebc775;
+    --hint-bg: #262012;
+    --hint-border: #4b3e1c;
+    --ok: #82d3a5;
+    --ok-bg: #12251b;
+    --ok-border: #224a34;
+    --sol: #baa6f2;
+    --sol-bg: #211b33;
+    --sol-border: #3b3161;
+    --code-bg: #0c1118;
+    --code-border: #263040;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e131a;
+  --surface: #161c26;
+  --surface-2: #1d2531;
+  --text: #e6eaf1;
+  --muted: #9aa6b8;
+  --border: #2b3443;
+  --accent: #7fb2f0;
+  --accent-soft: #1a2a42;
+  --accent-text: #0e131a;
+  --hint: #ebc775;
+  --hint-bg: #262012;
+  --hint-border: #4b3e1c;
+  --ok: #82d3a5;
+  --ok-bg: #12251b;
+  --ok-border: #224a34;
+  --sol: #baa6f2;
+  --sol-bg: #211b33;
+  --sol-border: #3b3161;
+  --code-bg: #0c1118;
+  --code-border: #263040;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 88px; }
+
+body {
+  margin: 0;
+  background: var(--page-bg, var(--bg));
+  background-attachment: fixed;
+  color: var(--text);
+  font: 18px/1.65 var(--font, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  overflow-wrap: anywhere;
+}
+
+a { color: var(--accent); }
+h1, h2, h3 { line-height: 1.25; margin: 0; font-family: var(--font-head, inherit); }
+p { margin: 0 0 0.9em; }
+ul, ol { margin: 0 0 0.9em; padding-left: 1.4em; }
+li { margin: 0.2em 0; }
+hr { border: 0; border-top: 1px solid var(--border); margin: 1.6em 0; }
+
+code {
+  font: 0.88em/1.4 ui-monospace, "Cascadia Code", "SF Mono", Consolas, Menlo, monospace;
+  background: var(--surface-2);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
+}
+
+/* ---- top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+.topbar img { height: 34px; width: auto; display: block; }
+.topbar .crumb { flex: 1; color: var(--muted); font-size: 0.85rem; min-width: 0; }
+.topbar .crumb a { color: inherit; text-decoration: none; }
+.topbar .crumb a:hover { color: var(--accent); }
+.icon-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--accent); }
+.no-js .icon-btn { display: none; }
+
+/* ---- layout ---- */
+.layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 36px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 16px 96px;
+}
+main { min-width: 0; max-width: 860px; }
+
+/* ---- nav ---- */
+.nav {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  font-size: 0.9rem;
+}
+.nav .overall { margin-bottom: 14px; }
+.nav .overall-label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.nosave { margin-top: 8px; font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.meter { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 6px; border: 1px solid var(--border); }
+.meter > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width 0.25s; }
+.nav ol { list-style: none; margin: 0; padding: 0; }
+.nav li { margin: 2px 0; }
+.nav a {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.35;
+}
+.nav a:hover { background: var(--surface-2); }
+.nav a.current { background: var(--accent-soft); }
+.nav .n { color: var(--muted); font-weight: 600; min-width: 1.4em; }
+.nav .t { flex: 1; min-width: 0; }
+.nav .count { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.82rem; white-space: nowrap; }
+.nav li.complete .count { color: var(--ok); font-weight: 600; }
+.nav li.complete .count::before { content: "\2713\00a0"; }
+.nav li.optional .t::after { content: " (optional)"; color: var(--muted); font-size: 0.8em; }
+
+/* ---- hero ---- */
+.hero { margin-bottom: 28px; }
+.eyebrow { color: var(--accent); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px; }
+.hero h1 { font-size: clamp(1.9rem, 4.6vw, 2.6rem); margin-bottom: 18px; }
+.where {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 14px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  margin: 0;
+  font-size: 0.92rem;
+}
+.where dt { color: var(--muted); }
+.where dd { margin: 0; min-width: 0; }
+.where code { font-size: 0.92em; word-break: break-all; }
+.copy-inline { margin-left: 8px; }
+
+.brief { margin-bottom: 8px; }
+.brief > ul:first-child { color: var(--muted); }
+
+/* ---- steps ---- */
+.step { margin-top: 44px; }
+.step > h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 1.55rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+}
+.step > h2 .num { color: var(--accent); }
+.step > h2 .grow { flex: 1; }
+.step.optional > h2 .num { color: var(--muted); }
+.step.optional { border-top: 1px dashed var(--border); padding-top: 8px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 20px 6px;
+  margin: 18px 0;
+}
+.card.is-done { border-left-color: var(--ok); }
+.card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.card-head h3 { flex: 1; min-width: 0; font-size: 1.15rem; display: flex; gap: 10px; align-items: baseline; }
+.tag {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85em;
+  border-radius: 6px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.card.is-done .tag { background: var(--ok-bg); color: var(--ok); }
+
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.done input { width: 22px; height: 22px; accent-color: var(--ok); cursor: pointer; margin: 0; }
+.no-js .done { display: none; }
+
+/* ---- code ---- */
+.codeblock { position: relative; margin: 0 0 1em; }
+.codeblock pre {
+  margin: 0;
+  overflow-x: auto;
+  background: var(--code-bg) !important;
+  border: 1px solid var(--code-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font: 0.86rem/1.55 ui-monospace, "Cascadia Code", "SF Mono", Consolas, Menlo, monospace;
+  tab-size: 4;
+}
+.codeblock pre code { background: none; padding: 0; font: inherit; overflow-wrap: normal; white-space: pre; }
+.shiki, .shiki span { color: var(--shiki-light); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .shiki, :root:not([data-theme]) .shiki span { color: var(--shiki-dark); }
+}
+/* the themes on a dark background take the dark code colours */
+:root:is([data-theme="dark"], [data-theme="spark"], [data-theme="cockpit"], [data-theme="synthwave"], [data-theme="terminal"]) :is(.shiki, .shiki span) { color: var(--shiki-dark); }
+.codeblock .lang {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  pointer-events: none;
+}
+.copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 9px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.codeblock:hover .copy, .copy:focus-visible { opacity: 1; }
+.copy:hover { color: var(--accent); border-color: var(--accent); }
+.copy.ok { color: var(--ok); border-color: var(--ok); opacity: 1; }
+.codeblock:has(.copy) .lang { display: none; }
+@media (hover: none) { .copy { opacity: 1; } }
+.copy-inline.copy { position: static; opacity: 1; display: inline-block; }
+
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; }
+th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+blockquote { margin: 0 0 1em; padding: 4px 16px; border-left: 4px solid var(--border); color: var(--muted); }
+
+/* ---- hint / output / solution ---- */
+details.aid { margin: 0 0 12px; border: 1px solid; border-radius: 10px; overflow: hidden; }
+details.aid > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+details.aid > summary::-webkit-details-marker { display: none; }
+details.aid > summary::before { content: "\25B8"; display: inline-block; transition: transform 0.15s; }
+details.aid[open] > summary::before { transform: rotate(90deg); }
+details.aid > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+details.aid > .body { padding: 6px 16px 4px; border-top: 1px solid; background: var(--surface); color: var(--text); }
+details.aid > .body > :last-child { margin-bottom: 0.9em; }
+details.aid .closed { display: inline; }
+details.aid .opened { display: none; }
+details.aid[open] .closed { display: none; }
+details.aid[open] .opened { display: inline; }
+
+details.hint { background: var(--hint-bg); border-color: var(--hint-border); color: var(--hint); }
+details.hint > .body { border-top-color: var(--hint-border); }
+details.output { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+details.output > .body { border-top-color: var(--ok-border); }
+div.task { margin: 0 0 14px; padding: 8px 16px 2px; border: 1px solid var(--accent); border-left-width: 5px; border-radius: 10px; background: var(--accent-soft); color: var(--text); }
+div.task > .task-label { margin: 0 0 4px; font-weight: 700; color: var(--accent); }
+div.task > :last-child { margin-bottom: 0.7em; }
+details.solution { background: var(--sol-bg); border-color: var(--sol-border); color: var(--sol); }
+details.solution > .body { border-top-color: var(--sol-border); }
+
+/* ---- slide previews ---- */
+/* Without script the button is plain text : html.slides-ok is set only where the dialog works. */
+button.slide-ref { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: text; }
+html.slides-ok button.slide-ref {
+  cursor: pointer;
+  color: var(--accent);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+html.slides-ok button.slide-ref:hover { text-decoration-style: solid; }
+html.slides-ok button.slide-ref::after {
+  content: "slide";
+  display: inline-block; /* keeps the link's underline off the badge */
+  font-size: 0.68em;
+  font-style: normal;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  vertical-align: 0.15em;
+}
+dialog.slide-dialog {
+  /* 16:10 slides : as wide as the window allows, and short enough to fit under the header */
+  width: min(1100px, calc(100vw - 32px), calc((100vh - 130px) * 1.6));
+  padding: 14px 16px 16px;
+}
+dialog.slide-dialog .slide-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+dialog.slide-dialog .slide-module { font-size: 0.8rem; margin: 0; }
+dialog.slide-dialog h2 { font-size: 1.1rem; margin: 2px 0 0; }
+dialog.slide-dialog .slide-actions { display: flex; gap: 8px; align-items: center; }
+dialog.slide-dialog a.deck-link,
+.hero a.deck-btn {
+  font-size: 0.95rem;
+  border-radius: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+dialog.slide-dialog a.deck-link:hover, .hero a.deck-btn:hover { border-color: var(--accent); }
+.hero p.deck { margin: 10px 0 0; }
+.hero a.deck-btn { display: inline-block; font-size: 0.9rem; padding: 6px 12px; }
+.hero a.deck-btn::after, dialog.slide-dialog a.deck-link::after { content: " \2197"; }
+dialog.slide-dialog .slide-host { border-radius: 6px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px var(--border); }
+
+/* ---- confirm dialog ---- */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 22px 24px;
+  width: min(440px, calc(100vw - 32px));
+  box-shadow: 0 20px 60px rgb(0 0 0 / 35%);
+}
+dialog::backdrop { background: rgb(10 14 22 / 55%); }
+dialog h2 { font-size: 1.25rem; margin-bottom: 10px; }
+dialog p { color: var(--muted); }
+dialog .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; }
+dialog button {
+  font: inherit;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+dialog button.primary { background: var(--sol); border-color: var(--sol); color: var(--surface); font-weight: 600; }
+
+/* ---- index ---- */
+.index main { max-width: 760px; }
+.index h1 { font-size: clamp(1.9rem, 4.6vw, 2.6rem); margin-bottom: 8px; }
+.index .lede { color: var(--muted); margin-bottom: 28px; }
+.index h2 { font-size: 1.1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 32px 0 10px; }
+.ex-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.ex-list li { margin: 0; }
+.ex-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+a.ex-row:hover { border-color: var(--accent); }
+.ex-row .num { font-weight: 700; color: var(--accent); min-width: 2.2em; }
+.ex-row .name { flex: 1; min-width: 0; }
+.badge { font-size: 0.78rem; border-radius: 99px; padding: 2px 10px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.badge.live { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); font-weight: 600; }
+.ex-row.pdf-only { box-shadow: none; background: transparent; color: var(--muted); }
+.ex-row.pdf-only .num { color: var(--muted); }
+.index-body { max-width: 760px; margin: 0 auto; padding: 8px 16px 96px; }
+
+/* ---- previous / next ---- */
+.pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 2px solid var(--border);
+}
+.pager a, .pager .none { text-decoration: none; }
+.pager .prev, .pager .next {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.pager .next { text-align: right; }
+.pager a.prev:hover, .pager a.next:hover, .pager a.all:hover { border-color: var(--accent); }
+.pager .none { border: 0; box-shadow: none; background: none; padding: 0; }
+.pager .dir { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.pager .what { font-size: 0.92rem; line-height: 1.35; }
+.pager .all {
+  align-self: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+.layout.no-steps .nav ol { display: none; }
+
+/* ---- phone ---- */
+@media (max-width: 900px) {
+  body { font-size: 17px; }
+  .layout { display: block; padding-bottom: 72px; }
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin: 0 -16px 16px;
+    padding: 8px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav .overall { margin: 0; flex: 0 0 84px; }
+  .nav .overall-label { display: none; }
+  .nav .overall-text { font-size: 0.8rem; color: var(--muted); }
+  .nav ol { display: flex; gap: 6px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: thin; }
+  .nav li { margin: 0; flex: 0 0 auto; }
+  .nav a { padding: 6px 12px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); }
+  .nav .t { display: none; }
+  .nav a.current { border-color: var(--accent); }
+  html { scroll-padding-top: 70px; }
+  .step > h2 { font-size: 1.3rem; }
+  .card { padding: 14px 14px 4px; }
+  .card-head { align-items: flex-start; }
+  .card-head h3 { font-size: 1.05rem; }
+  .where { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .where dd { margin-bottom: 8px; }
+  details.aid > .body { padding: 4px 12px 2px; }
+  .pager { grid-template-columns: minmax(0, 1fr); }
+  .pager .all { order: 3; justify-self: center; }
+  .pager .next { text-align: left; }
+  .pager .none { display: none; }
+}
+
+@media print {
+  .nav, .topbar .icon-btn, .copy, .done, .pager { display: none !important; }
+  details.aid > .body { display: block; }
+}
+
+/* ---- Easter eggs (eggs.js) ---- */
+.egg-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  max-width: min(560px, calc(100vw - 32px));
+  transform: translate(-50%, 140%);
+  opacity: 0;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 30%);
+  transition: transform 0.3s cubic-bezier(.3,1.4,.5,1), opacity 0.3s;
+  pointer-events: none;
+}
+.egg-toast.show { transform: translate(-50%, 0); opacity: 1; }
+.egg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 55; pointer-events: none; }
+
+.egg-plane {
+  position: fixed;
+  left: 0;
+  z-index: 56;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: egg-fly 6s linear forwards;
+}
+.egg-plane .craft { font-size: 2.6rem; }
+.egg-plane .banner {
+  font: 700 0.9rem system-ui, sans-serif;
+  padding: 4px 12px;
+  background: var(--hint-bg);
+  color: var(--hint);
+  border: 1px solid var(--hint-border);
+  border-radius: 4px;
+  animation: egg-flutter 0.4s ease-in-out infinite alternate;
+}
+@keyframes egg-fly { from { transform: translateX(-110%); } to { transform: translateX(110vw); } }
+@keyframes egg-flutter { from { transform: skewY(-3deg); } to { transform: skewY(3deg); } }
+
+.egg-spin { animation: egg-spin 1.6s cubic-bezier(.2,.8,.2,1); }
+@keyframes egg-spin { to { transform: rotate(1080deg); } }
+
+.egg-shake body { animation: egg-shake 0.6s; }
+@keyframes egg-shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-9px); }
+  40%, 60% { transform: translateX(9px); }
+}
+
+/* Party mode : Konami code, the word "party", ?party in the URL, or six themes in six seconds */
+.party .topbar { background: linear-gradient(90deg, #ff5fa2, #ffd23f, #82d3a5, #7fb2f0, #baa6f2, #ff5fa2); background-size: 300% 100%; animation: egg-slide 4s linear infinite; border-radius: 0 0 16px 16px; }
+.party .topbar .crumb, .party .topbar .crumb a { color: #182130; font-weight: 700; }
+.party .card, .party .ex-row { animation: egg-hue 5s linear infinite; }
+.party .card { border-left-width: 8px; }
+.party .step > h2 .num, .party .ex-row .num { display: inline-block; animation: egg-bounce 0.6s ease-in-out infinite alternate; }
+.party .meter > i { background: linear-gradient(90deg, #ff5fa2, #ffd23f, #82d3a5, #7fb2f0, #baa6f2); background-size: 200% 100%; animation: egg-slide 2s linear infinite; }
+.party .hero h1, .party.index h1, .party .index h1 {
+  background: linear-gradient(90deg, #e25822, #ff5fa2, #baa6f2, #7fb2f0, #17663f, #e25822);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: egg-slide 5s linear infinite;
+}
+.egg-ball {
+  position: fixed;
+  top: -6px;
+  left: 50%;
+  z-index: 57;
+  font-size: 3.2rem;
+  pointer-events: none;
+  transform-origin: 50% -40px;
+  animation: egg-swing 1.4s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 14px rgb(255 255 255 / 70%));
+}
+@keyframes egg-slide { to { background-position: 300% 0; } }
+@keyframes egg-hue { to { filter: hue-rotate(360deg); } }
+@keyframes egg-bounce { to { transform: translateY(-5px) scale(1.15); } }
+@keyframes egg-swing { from { transform: translateX(-50%) rotate(-14deg); } to { transform: translateX(-50%) rotate(14deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .party *, .egg-ball, .egg-spin, .egg-toast { animation: none !important; transition: none !important; }
+}
+.egg-matrix { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 58; cursor: pointer; animation: egg-fade-in 0.6s ease-out; transition: opacity 0.8s; }
+.egg-matrix.out { opacity: 0; }
+@keyframes egg-fade-in { from { opacity: 0; } }
+@media print { .egg-toast, .egg-canvas, .egg-plane, .egg-ball, .egg-matrix { display: none !important; } }
+/* Difficulty in the heading stays separate from the step's title and identity. */
+.tier { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: .12em .55em; font-size: .65em; letter-spacing: .08em; white-space: nowrap; }
+
+/* Exercise site : the theme picker and the themes, inlined after site.css by build-site.ts.
+   Each theme is a block of tokens on :root[data-theme="..."], then a few touches of its own.
+   A theme must keep the exercise readable : the touches decorate the page, never the text a
+   student reads. A theme on a dark background is also listed in site.css, by the .shiki rule,
+   so its code takes the dark colours. The list in the picker is THEMES in site.js. */
+
+/* ---- theme picker ---- */
+.theme-pick { position: relative; }
+.theme-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 40;
+  width: 260px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+}
+.theme-menu[hidden] { display: none; }
+.theme-menu button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  text-shadow: none;
+}
+.theme-menu button:hover, .theme-menu button:focus-visible { background: var(--surface-2); outline: none; }
+.theme-menu button[aria-checked="true"] { background: var(--accent-soft); }
+.theme-menu button[aria-checked="true"] .label::after { content: "  \2713"; color: var(--accent); }
+.theme-menu .swatch { grid-row: 1 / span 2; display: flex; }
+.theme-menu .swatch i { width: 14px; height: 22px; border: 1px solid rgb(128 128 128 / 45%); }
+.theme-menu .swatch i:first-child { border-radius: 5px 0 0 5px; }
+.theme-menu .swatch i:last-child { border-radius: 0 5px 5px 0; }
+.theme-menu .label { font-weight: 600; }
+.theme-menu .note { grid-column: 2; font-size: 0.78rem; color: var(--muted); line-height: 1.2; }
+
+:root[data-theme="light"] { color-scheme: light; }
+
+/* ---- Spark : charcoal and Apache orange ---- */
+:root[data-theme="spark"] {
+  color-scheme: dark;
+  --bg: #16130f; --surface: #201b16; --surface-2: #2b241d; --text: #f3ece4; --muted: #b3a593;
+  --border: #3d3329; --accent: #ff7a3d; --accent-soft: #3a2316; --accent-text: #16130f;
+  --hint: #ffd27a; --hint-bg: #2c2414; --hint-border: #57461f;
+  --ok: #8fe0a8; --ok-bg: #15271b; --ok-border: #2a4d35;
+  --sol: #ffb1e0; --sol-bg: #2e1a28; --sol-border: #5a3350;
+  --code-bg: #110e0b; --code-border: #33291f;
+  --shadow: 0 1px 2px rgb(0 0 0 / 50%), 0 0 0 1px rgb(255 122 61 / 4%);
+  --page-bg: radial-gradient(1200px 500px at 85% -10%, rgb(255 122 61 / 22%), transparent 60%), radial-gradient(900px 400px at -10% 110%, rgb(226 88 34 / 14%), transparent 60%), #16130f;
+}
+:root[data-theme="spark"] .hero h1, :root[data-theme="spark"] .index h1 {
+  background: linear-gradient(90deg, #ffd23f, #ff7a3d 45%, #e25822);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root[data-theme="spark"] .step > h2 { border-image: linear-gradient(90deg, #ff7a3d, transparent) 1; }
+:root[data-theme="spark"] .card { border-left-color: #ff7a3d; box-shadow: var(--shadow), -6px 0 18px -10px #ff7a3d; }
+
+/* ---- Cockpit : a night flight, amber and green instruments ---- */
+:root[data-theme="cockpit"] {
+  color-scheme: dark;
+  --font: "Bahnschrift", "DIN Alternate", "Segoe UI", system-ui, sans-serif;
+  --bg: #07111f; --surface: #0c1a2e; --surface-2: #11233d; --text: #dbe8f5; --muted: #8aa1bb;
+  --border: #1d3556; --accent: #ffb347; --accent-soft: #2a2312; --accent-text: #07111f;
+  --hint: #ffd27a; --hint-bg: #1e1c12; --hint-border: #4d4121;
+  --ok: #7ef0b0; --ok-bg: #0b241c; --ok-border: #1d5a40;
+  --sol: #8fd4ff; --sol-bg: #0c2236; --sol-border: #1f4d73;
+  --code-bg: #040b15; --code-border: #1a2e4a;
+  --radius: 4px;
+  --shadow: 0 0 0 1px rgb(255 179 71 / 6%), 0 8px 24px rgb(0 0 0 / 45%);
+  --page-bg:
+    radial-gradient(circle at 50% -20%, rgb(80 140 220 / 18%), transparent 55%),
+    repeating-linear-gradient(0deg, transparent 0 39px, rgb(120 170 230 / 5%) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgb(120 170 230 / 5%) 39px 40px),
+    #07111f;
+}
+:root[data-theme="cockpit"] .eyebrow, :root[data-theme="cockpit"] .step > h2 { text-transform: uppercase; letter-spacing: 0.06em; }
+:root[data-theme="cockpit"] .hero h1, :root[data-theme="cockpit"] .index h1 { color: #ffb347; text-shadow: 0 0 18px rgb(255 179 71 / 45%); text-transform: uppercase; letter-spacing: 0.04em; }
+:root[data-theme="cockpit"] .step > h2 .num { color: #7ef0b0; text-shadow: 0 0 10px rgb(126 240 176 / 50%); }
+:root[data-theme="cockpit"] .card { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: linear-gradient(180deg, rgb(255 255 255 / 2%), transparent 40%), var(--surface); }
+:root[data-theme="cockpit"] .meter { height: 10px; background: #031008; border-color: #1d5a40; }
+:root[data-theme="cockpit"] .meter > i { background: repeating-linear-gradient(90deg, #7ef0b0 0 6px, transparent 6px 8px); box-shadow: 0 0 8px rgb(126 240 176 / 60%); }
+:root[data-theme="cockpit"] .topbar .crumb::before { content: "\2708\FE0E\00a0\00a0"; color: var(--accent); }
+
+/* ---- Synthwave : a neon sun over an endless grid ---- */
+:root[data-theme="synthwave"] {
+  color-scheme: dark;
+  --bg: #1a0b2e; --surface: rgb(36 16 64 / 88%); --surface-2: #2e1650; --text: #f6e9ff; --muted: #c0a3dd;
+  --border: #4b2a7a; --accent: #ff4fd8; --accent-soft: #3d1650; --accent-text: #1a0b2e;
+  --hint: #ffe066; --hint-bg: #2e2316; --hint-border: #6b5222;
+  --ok: #36e2ff; --ok-bg: #0f2540; --ok-border: #1f5c86;
+  --sol: #ff9be9; --sol-bg: #36123f; --sol-border: #6e2a7c;
+  --code-bg: #120722; --code-border: #3c2066;
+  --shadow: 0 0 0 1px rgb(255 79 216 / 10%), 0 10px 30px rgb(10 0 30 / 55%);
+  --page-bg: linear-gradient(180deg, #12062a 0%, #2a0b4a 55%, #5a1361 100%);
+}
+:root[data-theme="synthwave"] body::before {
+  content: "";
+  position: fixed;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 42vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 79 216 / 55%) 0 2px, transparent 2px 80px),
+    repeating-linear-gradient(0deg, rgb(255 79 216 / 55%) 0 2px, transparent 2px 46px);
+  transform: perspective(320px) rotateX(62deg);
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(0deg, #000 10%, transparent 90%);
+  mask-image: linear-gradient(0deg, #000 10%, transparent 90%);
+}
+:root[data-theme="synthwave"] body::after {
+  content: "";
+  position: fixed;
+  right: 6vw;
+  bottom: 30vh;
+  width: 34vh;
+  height: 34vh;
+  z-index: -2;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffe066 0%, #ff8a3d 45%, #ff4fd8 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 45%), repeating-linear-gradient(180deg, #000 0 12px, transparent 12px 17px);
+  mask-image: linear-gradient(180deg, #000 45%, transparent 45%), repeating-linear-gradient(180deg, #000 0 12px, transparent 12px 17px);
+  opacity: 0.6;
+  filter: drop-shadow(0 0 30px #ff4fd8);
+}
+/* the sun and the grid stay in the margins : the text sits on a panel */
+:root[data-theme="synthwave"] main, :root[data-theme="synthwave"] .index-body { background: rgb(22 9 42 / 86%); border-radius: 14px; padding: 12px 20px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+:root[data-theme="synthwave"] .card, :root[data-theme="synthwave"] .ex-row, :root[data-theme="synthwave"] .where { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+:root[data-theme="synthwave"] .hero h1, :root[data-theme="synthwave"] .index h1 {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: linear-gradient(180deg, #36e2ff 0%, #f6e9ff 48%, #ff4fd8 52%, #ffb36b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgb(255 79 216 / 65%));
+}
+:root[data-theme="synthwave"] .step > h2 .num { color: #36e2ff; text-shadow: 0 0 10px #36e2ff; }
+:root[data-theme="synthwave"] .card { border-left-color: #36e2ff; box-shadow: var(--shadow), -4px 0 14px -6px #36e2ff; }
+
+/* ---- Terminal : green phosphor on black ---- */
+:root[data-theme="terminal"] {
+  color-scheme: dark;
+  --font: "Cascadia Mono", "Cascadia Code", ui-monospace, Consolas, "SF Mono", Menlo, monospace;
+  --bg: #020802; --surface: #041104; --surface-2: #072007; --text: #b6ffc4; --muted: #5fbf72;
+  --border: #145c22; --accent: #33ff66; --accent-soft: #08300f; --accent-text: #020802;
+  --hint: #e8ff6b; --hint-bg: #121a04; --hint-border: #3f5a10;
+  --ok: #33ff66; --ok-bg: #062a0e; --ok-border: #13702a;
+  --sol: #6bfff0; --sol-bg: #042222; --sol-border: #0f5a55;
+  --code-bg: #010501; --code-border: #0e3d16;
+  --radius: 0;
+  --shadow: 0 0 0 1px rgb(51 255 102 / 8%);
+}
+:root[data-theme="terminal"] body { font-size: 16px; text-shadow: 0 0 4px rgb(51 255 102 / 35%); }
+:root[data-theme="terminal"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 160px rgb(0 0 0 / 85%);
+}
+:root[data-theme="terminal"] .hero h1::before, :root[data-theme="terminal"] .index h1::before { content: "$ "; color: var(--muted); }
+:root[data-theme="terminal"] .hero h1::after, :root[data-theme="terminal"] .index h1::after { content: "\2588"; margin-left: 6px; animation: term-blink 1.1s steps(1) infinite; }
+:root[data-theme="terminal"] .step > h2 { border-bottom-style: dashed; }
+:root[data-theme="terminal"] .step > h2::before { content: "##"; color: var(--muted); }
+:root[data-theme="terminal"] .card { border: 1px dashed var(--border); border-left: 1px solid var(--accent); }
+:root[data-theme="terminal"] .topbar img { filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4) brightness(0.9); }
+:root[data-theme="terminal"] .icon-btn, :root[data-theme="terminal"] .ex-row, :root[data-theme="terminal"] .pager a, :root[data-theme="terminal"] .badge { border-radius: 0; }
+@keyframes term-blink { 50% { opacity: 0; } }
+
+/* ---- Delfts blauw : blue on white, with tiles ---- */
+:root[data-theme="delft"] {
+  color-scheme: light;
+  --font-head: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --bg: #fbfaf5; --surface: #ffffff; --surface-2: #eef1f8; --text: #14234d; --muted: #4f5d84;
+  --border: #c9d2e8; --accent: #1f3f8f; --accent-soft: #e3e9f7; --accent-text: #ffffff;
+  --code-bg: #f6f8fc; --code-border: #d5dcee;
+  --radius: 6px;
+  --shadow: 0 1px 0 #c9d2e8, 0 6px 18px rgb(31 63 143 / 8%);
+  --page-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23fbfaf5'/%3E%3Crect x='.5' y='.5' width='95' height='95' fill='none' stroke='%231f3f8f' stroke-opacity='.12'/%3E%3Cg fill='none' stroke='%231f3f8f' stroke-opacity='.2' stroke-width='1.6'%3E%3Ccircle cx='48' cy='48' r='8'/%3E%3Cpath d='M48 28q7 10 0 20q-7-10 0-20zM48 68q7-10 0-20q-7 10 0 20zM28 48q10-7 20 0q-10 7-20 0zM68 48q-10-7-20 0q10 7 20 0z'/%3E%3Cpath d='M0 12q12 0 12-12M84 0q0 12 12 12M96 84q-12 0-12 12M12 96q0-12-12-12'/%3E%3C/g%3E%3C/svg%3E") repeat, #fbfaf5;
+}
+:root[data-theme="delft"] main, :root[data-theme="delft"] .index-body { background: rgb(251 250 245 / 90%); border-radius: 10px; padding: 8px 16px; }
+:root[data-theme="delft"] .card { border: 1px solid var(--border); border-left: 5px double var(--accent); }
+:root[data-theme="delft"] .hero h1, :root[data-theme="delft"] .index h1 { color: #1f3f8f; }
+:root[data-theme="delft"] .step > h2 { border-bottom: 3px double var(--accent); }
+
+/* ---- Oranje : Koningsdag, with the flag across the top ---- */
+:root[data-theme="oranje"] {
+  color-scheme: light;
+  --bg: #fff6ec; --surface: #ffffff; --surface-2: #ffeedd; --text: #1b2a52; --muted: #6a5a4a;
+  --border: #ffd3a8; --accent: #d45400; --accent-soft: #ffe7cf; --accent-text: #ffffff;
+  --code-bg: #fffaf4; --code-border: #f5d8b8;
+  --shadow: 0 1px 2px rgb(232 93 0 / 10%), 0 6px 16px rgb(232 93 0 / 8%);
+  --page-bg: linear-gradient(180deg, #ffe2c2, #fff6ec 260px);
+}
+:root[data-theme="oranje"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 9px;
+  z-index: 30;
+  background: linear-gradient(180deg, #ae1c28 0 33%, #ffffff 33% 66%, #21468b 66%);
+}
+:root[data-theme="oranje"] .hero h1::after, :root[data-theme="oranje"] .index h1::after { content: " \1F981"; }
+:root[data-theme="oranje"] .hero h1, :root[data-theme="oranje"] .index h1 { color: #e85d00; }
+:root[data-theme="oranje"] .card { border-left-width: 6px; border-left-color: #ff6a00; }
+
+/* ---- Paper : ink on sepia ---- */
+:root[data-theme="paper"] {
+  color-scheme: light;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --bg: #f3ead7; --surface: #fbf6ea; --surface-2: #efe4cc; --text: #3b2f22; --muted: #7a6852;
+  --border: #dccdaa; --accent: #8b2e1d; --accent-soft: #f1dccf; --accent-text: #fbf6ea;
+  --hint: #6e5200; --hint-bg: #f6ecc9; --hint-border: #e0cd8f;
+  --ok: #3f6a2a; --ok-bg: #e8edd2; --ok-border: #c4d29b;
+  --sol: #5a3a7a; --sol-bg: #eee3ee; --sol-border: #d4c0d6;
+  --code-bg: #f8f1e1; --code-border: #e0d1b0;
+  --radius: 3px;
+  --shadow: 0 1px 1px rgb(80 60 30 / 12%), 2px 4px 0 rgb(80 60 30 / 6%);
+  --page-bg: radial-gradient(ellipse at center, #f6eedd 0%, #ecdfc2 100%);
+}
+:root[data-theme="paper"] .hero h1, :root[data-theme="paper"] .index h1 { font-style: italic; font-weight: 600; }
+:root[data-theme="paper"] .card { border-left: 1px solid var(--border); }
+:root[data-theme="paper"] .card-head .tag { font-variant: small-caps; background: none; border: 1px solid currentColor; }
+:root[data-theme="paper"] .step > h2 { border-bottom: 1px solid var(--text); font-variant: small-caps; }
+
+/* ---- Retro 95 : grey windows on a teal desktop ---- */
+:root[data-theme="retro95"] {
+  color-scheme: light;
+  --font: Tahoma, "MS Sans Serif", "Segoe UI", Geneva, Verdana, sans-serif;
+  --bg: #008080; --surface: #c0c0c0; --surface-2: #d4d0c8; --text: #000000; --muted: #404040;
+  --border: #808080; --accent: #000080; --accent-soft: #b4b4d8; --accent-text: #ffffff;
+  --hint: #000000; --hint-bg: #ffffe1; --hint-border: #808080;
+  --ok: #004000; --ok-bg: #d8ecd8; --ok-border: #808080;
+  --sol: #400040; --sol-bg: #e8d8e8; --sol-border: #808080;
+  --code-bg: #ffffff; --code-border: #808080;
+  --radius: 0;
+  --shadow: none;
+  --bevel: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+:root[data-theme="retro95"] body { font-size: 16px; }
+:root[data-theme="retro95"] main, :root[data-theme="retro95"] .layout > .nav, :root[data-theme="retro95"] .index-body {
+  background: var(--surface);
+  box-shadow: var(--bevel);
+  padding: 32px 18px 18px;
+  position: relative;
+}
+:root[data-theme="retro95"] .index-body main { background: none; box-shadow: none; padding: 0; }
+:root[data-theme="retro95"] .index-body main::before, :root[data-theme="retro95"] .index-body main::after { display: none; }
+:root[data-theme="retro95"] main::before, :root[data-theme="retro95"] .layout > .nav::before, :root[data-theme="retro95"] .index-body::before {
+  position: absolute;
+  inset: 3px 3px auto 3px;
+  height: 20px;
+  padding: 0 6px;
+  font: 700 13px/20px Tahoma, sans-serif;
+  color: #fff;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  content: "exercise.exe";
+}
+:root[data-theme="retro95"] .layout > .nav::before { content: "progress.exe"; }
+:root[data-theme="retro95"] .index-body::before { content: "C:\\COURSE\\PYSPARK"; }
+:root[data-theme="retro95"] main::after, :root[data-theme="retro95"] .layout > .nav::after, :root[data-theme="retro95"] .index-body::after {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  width: 16px;
+  height: 14px;
+  font: 700 11px/14px Tahoma, sans-serif;
+  text-align: center;
+  color: #000;
+  background: #c0c0c0;
+  box-shadow: var(--bevel);
+  content: "\00d7";
+}
+:root[data-theme="retro95"] .topbar { background: var(--surface); box-shadow: var(--bevel); max-width: none; }
+:root[data-theme="retro95"] .topbar .crumb, :root[data-theme="retro95"] .topbar .crumb a { color: #000; }
+:root[data-theme="retro95"] .card, :root[data-theme="retro95"] .ex-row, :root[data-theme="retro95"] .where, :root[data-theme="retro95"] .pager a {
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-2);
+  box-shadow: var(--bevel);
+}
+:root[data-theme="retro95"] .card.is-done { background: #d8ecd8; }
+:root[data-theme="retro95"] .icon-btn, :root[data-theme="retro95"] dialog button, :root[data-theme="retro95"] .copy {
+  border: 0;
+  border-radius: 0;
+  background: #c0c0c0;
+  color: #000;
+  box-shadow: var(--bevel);
+}
+:root[data-theme="retro95"] .icon-btn:active, :root[data-theme="retro95"] dialog button:active { box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #ffffff, inset 2px 2px #808080; }
+:root[data-theme="retro95"] details.aid, :root[data-theme="retro95"] .theme-menu, :root[data-theme="retro95"] dialog, :root[data-theme="retro95"] .badge { border-radius: 0; }
+:root[data-theme="retro95"] .codeblock pre { border-radius: 0; border: 0; box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff, inset 2px 2px #0a0a0a; }
+:root[data-theme="retro95"] .meter { height: 18px; border-radius: 0; background: #fff; box-shadow: inset 1px 1px #808080, inset -1px -1px #fff; border: 0; padding: 2px; }
+:root[data-theme="retro95"] .meter > i { background: repeating-linear-gradient(90deg, #000080 0 10px, transparent 10px 12px); }
+:root[data-theme="retro95"] .nav a.current, :root[data-theme="retro95"] .theme-menu button[aria-checked="true"] { background: #000080; color: #fff; border-radius: 0; }
+:root[data-theme="retro95"] .nav a.current .n, :root[data-theme="retro95"] .nav a.current .count,
+:root[data-theme="retro95"] .theme-menu button[aria-checked="true"] .note, :root[data-theme="retro95"] .theme-menu button[aria-checked="true"] .label::after { color: #fff; }
+
+/* the themes stay on screen : a printout is black on white */
+@media print {
+  :root[data-theme] { --page-bg: #fff; }
+  :root[data-theme] body::before, :root[data-theme] body::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="terminal"] .hero h1::after, :root[data-theme="terminal"] .index h1::after { animation: none; }
+}
+@media (max-width: 900px) {
+  :root[data-theme="retro95"] .layout > .nav { padding-top: 30px; margin: 0 0 16px; }
+  :root[data-theme="synthwave"] body::after { display: none; }
+}
+
+</style>
+</head>
+<body class="exercise">
+<div class="topbar">
+  <a href="index.html"><img src="data:image/png;base64,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" alt="SpiralTrain"></a>
+  <div class="crumb"><a href="index.html">Exercises</a> &rsaquo; Exercise 4</div>
+  <div class="theme-pick"><button type="button" class="icon-btn" id="theme-toggle">Theme</button></div>
+</div>
+<div class="layout">
+<nav class="nav" aria-label="Steps">
+  <div class="overall"><div class="overall-label">Progress</div><div class="meter"><i></i></div><div class="overall-text">0 of 4 done</div></div>
+  <ol>
+<li class=""><a href="#step-1" data-step="1"><span class="n">1</span><span class="t">Tools</span><span class="count">0/1</span></a></li>
+<li class=""><a href="#step-2" data-step="2"><span class="n">2</span><span class="t">Checker</span><span class="count">0/1</span></a></li>
+<li class=""><a href="#step-3" data-step="3"><span class="n">3</span><span class="t">Parallel specialists</span><span class="count">0/1</span></a></li>
+<li class=""><a href="#step-4" data-step="4"><span class="n">4</span><span class="t">Cost</span><span class="count">0/1</span></a></li>
+<li class="optional"><a href="#step-opt" data-step="opt"><span class="n">If time permits</span><span class="t"></span><span class="count">0/1</span></a></li>
+  </ol>
+</nav>
+<main>
+<header class="hero">
+  <p class="eyebrow">Exercise 4</p>
+  <h1>A Multi-Agent Visit Planner</h1>
+  <p class="deck"><a class="deck-btn" href="slides/05-multi-agent-patterns.html" target="_blank" rel="noopener">Open the slides of this module</a></p>
+  <dl class="where">
+    <dt>Skeleton</dt><dd><code data-copy="exercises/exercise04-a-multi-agent-visit-planner.ipynb">exercises/exercise04-a-multi-agent-visit-planner.ipynb</code></dd>
+    <dt>Solution</dt><dd><code data-copy="solutions/exercise04-a-multi-agent-visit-planner.ipynb">solutions/exercise04-a-multi-agent-visit-planner.ipynb</code></dd>
+    <dt>Open in Jupyter</dt><dd><code data-copy="uv run jupyter lab exercises/exercise04-a-multi-agent-visit-planner.ipynb">uv run jupyter lab exercises/exercise04-a-multi-agent-visit-planner.ipynb</code></dd>
+  </dl>
+</header>
+<div class="brief">
+<p>Open <code>exercises/exercise04-a-multi-agent-visit-planner.ipynb</code> and run the setup cell. You plan an engineer's visit to Aurelia site S04 with a parts agent and a manuals agent running in parallel, and a code checker, then compare it with one agent ; the solution is <code>solutions/exercise04-a-multi-agent-visit-planner.ipynb</code>.</p>
+<p>Worked examples to revisit : <code>demo03b · router-parallel</code>, <code>demo06b · workflows-parallel</code>, <code>demo07 · maker-checker</code>, <code>demo09 · what-each-pattern-costs</code>.</p>
+<p>Made up, not from work. The Aurelia sites, devices and manuals are fictional.</p>
+</div>
+<section class="step" id="step-1" data-step="1">
+<h2><span class="num">Step 1</span><span class="title">Tools</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="1" data-step="1"> Done</label></h2>
+<p>Run the two cells. They define <code>run_sql</code> and <code>search_manuals</code> and list the devices at S04.</p>
+<p>What does <code>run_sql</code> return for <code>DELETE FROM devices</code>?</p>
+
+</section>
+<section class="step" id="step-2" data-step="2">
+<h2><span class="num">Step 2</span><span class="title">Checker</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="2" data-step="2"> Done</label></h2>
+<p>Write <code>check_plan(plan, site_id)</code>. It returns a list of problems, empty when the plan passes :</p>
+<ul>
+<li>Every device at the site appears in the plan by serial number</li>
+<li>Every part number that <code>PART</code> matches exists in <code>parts</code></li>
+<li>A part with stock 0 has &quot;out of stock&quot; on the same line</li>
+</ul>
+<p>Error codes such as <code>E-MR-202</code> do not match <code>PART</code>. The test cell must pass before you go on.</p>
+<p>Which three problems does <code>BAD</code> have?</p>
+
+</section>
+<section class="step" id="step-3" data-step="3">
+<h2><span class="num">Step 3</span><span class="title">Parallel specialists</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="3" data-step="3"> Done</label></h2>
+<p>This is the Parallel Agents workflow of module 05 : every visit needs both specialists, so no classifier chooses between them. The parts agent receives a ready query from <code>parts_question</code> : the open work orders at the site and the parts for each device's model.</p>
+<p>Complete <code>manuals_question</code> : ask which maintenance intervals and service bulletins apply to the devices in <code>state[&quot;devices&quot;]</code>. Then complete <code>dispatch</code> with one <code>Send</code> to <code>parts</code> and one to <code>manuals</code>, and <code>after_check</code> : <code>&quot;assemble&quot;</code> while problems remain and <code>rounds</code> is under 2, otherwise <code>END</code>. Replace the blank line with an edge from both specialists to <code>assemble</code>.</p>
+<p>Which nodes does <code>dispatch</code> send to, and what does <code>after_check</code> return once <code>rounds</code> reaches 2?</p>
+
+</section>
+<section class="step" id="step-4" data-step="4">
+<h2><span class="num">Step 4</span><span class="title">Cost</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="4" data-step="4"> Done</label></h2>
+<p>Run the planner for S04, then the single agent with both tools on the same task. The metrics lines print calls and tokens for each.</p>
+<p>How many model calls and tokens did each design use? Did the checker pass the planner's plan?</p>
+
+</section>
+<section class="step optional" id="step-opt" data-step="opt">
+<h2><span class="num">If time permits</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="opt" data-step="opt" data-optional="1"> Done</label></h2>
+<ul>
+<li>Plan site S01 with <code>run_planner</code> and check that the part matches the CT-400's work order</li>
+<li>Remove &quot;Write 'out of stock' ...&quot; from <code>PLAN_RULES</code>, run the planner again and read round 2</li>
+<li>Add a fourth check : every CT-400 on firmware below 5.2 gets the 12-month fan interval</li>
+<li>Replace the parallel dispatch with a handoff. The transfer tool refuses a transfer that shares its turn with other tool calls and forwards the full worker history, as in <code>demo04b · handoffs-fixed</code></li>
+</ul>
+
+</section>
+<nav class="pager" aria-label="Other exercises"><a class="prev" href="03-an-agent-with-tests.html"><span class="dir">Previous</span><span class="what">Exercise 3 : An Agent with Tests</span></a><a class="all" href="index.html">All exercises</a><a class="next" href="05-two-agents-over-a2a.html"><span class="dir">Next</span><span class="what">Exercise 5 : Two Agents over A2A</span></a></nav>
+</main>
+</div>
+<dialog id="confirm" aria-labelledby="confirm-title"><form method="dialog"><h2 id="confirm-title">Tried it yourself first?</h2><p>The solution is a spoiler. Work through the hints first : a wrong attempt teaches more than a solution you only read.</p><div class="row"><button value="no">Keep trying</button><button value="yes" class="primary">Show the solution</button></div></form></dialog>
+<!--
+
+--><script>
+/* Exercise site : progressive enhancement, inlined into every page by build-site.ts.
+   Without this script the page still reads : hints, output and solutions are <details>. */
+(function () {
+  'use strict';
+  var prefix = document.documentElement.getAttribute('data-storage-prefix') || 'exercise-site:';
+
+  var page = document.documentElement.getAttribute('data-page') || location.pathname;
+
+  // ---- storage : every access wrapped, the page must work without it ----
+  function load(key) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* private window */ }
+  }
+  // Some browsers refuse localStorage on file:// or in a private window. The page then works as
+  // usual, but ticks and the theme are forgotten on reload, and the reader is told so.
+  var storageOk = (function () {
+    try {
+      localStorage.setItem((prefix + 'probe'), '1');
+      localStorage.removeItem((prefix + 'probe'));
+      return true;
+    } catch (e) { return false; }
+  })();
+  function sessionGet(key) {
+    try { return sessionStorage.getItem(key); } catch (e) { return null; }
+  }
+  function sessionSet(key, value) {
+    try { sessionStorage.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+
+  // ---- theme picker ----
+  // `auto` follows the system and leaves data-theme off <html>. Every other theme is a block
+  // of tokens in site.css under :root[data-theme="..."]. The swatch is background, accent, text.
+  var THEMES = [
+    { id: 'auto', name: 'Auto', note: 'follows your system', swatch: ['#f4f6f9', '#1d4f91', '#0e131a'] },
+    { id: 'light', name: 'Light', swatch: ['#f4f6f9', '#1d4f91', '#182130'] },
+    { id: 'dark', name: 'Dark', swatch: ['#0e131a', '#7fb2f0', '#e6eaf1'] },
+    { id: 'spark', name: 'Spark', note: 'Apache orange', swatch: ['#16130f', '#ff7a3d', '#f3ece4'] },
+    { id: 'cockpit', name: 'Cockpit', note: 'night flight', swatch: ['#07111f', '#ffb347', '#7ef0b0'] },
+    { id: 'synthwave', name: 'Synthwave', note: '1986 called', swatch: ['#1a0b2e', '#ff4fd8', '#36e2ff'] },
+    { id: 'terminal', name: 'Terminal', note: 'green phosphor', swatch: ['#020802', '#33ff66', '#b6ffc4'] },
+    { id: 'delft', name: 'Delfts blauw', note: 'tiles and all', swatch: ['#fbfaf5', '#1f3f8f', '#14234d'] },
+    { id: 'oranje', name: 'Oranje', note: 'Koningsdag', swatch: ['#fff6ec', '#ff6a00', '#21468b'] },
+    { id: 'paper', name: 'Paper', note: 'ink and sepia', swatch: ['#f3ead7', '#8b2e1d', '#3b2f22'] },
+    { id: 'retro95', name: 'Retro 95', note: 'start me up', swatch: ['#008080', '#000080', '#c0c0c0'] }
+  ];
+  var themeBtn = document.getElementById('theme-toggle');
+  function currentTheme() {
+    var t = document.documentElement.getAttribute('data-theme');
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === t) return THEMES[i];
+    return THEMES[0];
+  }
+  function setTheme(id) {
+    if (id === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', id);
+    save((prefix + 'theme'), id);
+    paintThemeBtn();
+    document.dispatchEvent(new CustomEvent('exercise-site:theme', { detail: id }));
+    document.dispatchEvent(new CustomEvent('pyspark:theme', { detail: id }));
+  }
+  function paintThemeBtn() {
+    if (themeBtn) themeBtn.textContent = 'Theme : ' + currentTheme().name;
+  }
+  if (themeBtn) {
+    paintThemeBtn();
+    themeBtn.setAttribute('aria-haspopup', 'true');
+    themeBtn.setAttribute('aria-expanded', 'false');
+    var menu = document.createElement('div');
+    menu.className = 'theme-menu';
+    menu.setAttribute('role', 'menu');
+    menu.hidden = true;
+    THEMES.forEach(function (t) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('data-theme-id', t.id);
+      var dots = document.createElement('span');
+      dots.className = 'swatch';
+      dots.setAttribute('aria-hidden', 'true');
+      t.swatch.forEach(function (c) {
+        var dot = document.createElement('i');
+        dot.style.background = c;
+        dots.appendChild(dot);
+      });
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = t.name;
+      item.appendChild(dots);
+      item.appendChild(label);
+      if (t.note) {
+        var note = document.createElement('span');
+        note.className = 'note';
+        note.textContent = t.note;
+        item.appendChild(note);
+      }
+      item.addEventListener('click', function () { setTheme(t.id); paintMenu(); });
+      menu.appendChild(item);
+    });
+    themeBtn.parentNode.appendChild(menu);
+    var paintMenu = function () {
+      var id = currentTheme().id;
+      Array.prototype.forEach.call(menu.children, function (b) {
+        b.setAttribute('aria-checked', b.getAttribute('data-theme-id') === id ? 'true' : 'false');
+      });
+    };
+    var openMenu = function (open) {
+      menu.hidden = !open;
+      themeBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        paintMenu();
+        var on = menu.querySelector('[aria-checked="true"]');
+        if (on) on.focus();
+      }
+    };
+    themeBtn.addEventListener('click', function () { openMenu(menu.hidden); });
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== themeBtn) openMenu(false);
+    });
+    menu.addEventListener('keydown', function (e) {
+      var items = Array.prototype.slice.call(menu.children);
+      var i = items.indexOf(document.activeElement);
+      if (e.key === 'Escape') { e.stopPropagation(); openMenu(false); themeBtn.focus(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    });
+  }
+
+  // ---- copy buttons ----
+  function copyText(text, btn) {
+    function done() {
+      var old = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('ok');
+      setTimeout(function () { btn.textContent = old; btn.classList.remove('ok'); }, 1400);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text);
+      done();
+    }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* nothing more to try */ }
+    document.body.removeChild(ta);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.codeblock'), function (block) {
+    var pre = block.querySelector('pre');
+    if (!pre) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code');
+    btn.addEventListener('click', function () { copyText(pre.textContent.replace(/\n$/, ''), btn); });
+    block.appendChild(btn);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (el) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy copy-inline';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', function () { copyText(el.getAttribute('data-copy'), btn); });
+    el.parentNode.appendChild(btn);
+  });
+
+  // ---- hints : one open at a time is `name=` on <details>. Older browsers get it here ----
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d || !d.matches || !d.matches('details.hint[open]')) return;
+    var group = d.getAttribute('name');
+    if (!group) return;
+    Array.prototype.forEach.call(document.querySelectorAll('details.hint[open]'), function (o) {
+      if (o !== d && o.getAttribute('name') === group) o.open = false;
+    });
+  }, true);
+
+  // ---- solution : asks once per page whether the reader tried first ----
+  var dialog = document.getElementById('confirm');
+  var confirmKey = (prefix + 'confirmed:') + page;
+  var confirmed = sessionGet(confirmKey) === '1';
+  var canDialog = dialog && typeof dialog.showModal === 'function';
+  var pending = null;
+  document.addEventListener('click', function (e) {
+    var summary = e.target.closest ? e.target.closest('details.solution > summary') : null;
+    if (!summary) return;
+    var d = summary.parentNode;
+    if (d.open || confirmed || !canDialog) return; // closing, already confirmed, or no dialog : native
+    e.preventDefault();
+    pending = d;
+    dialog.showModal();
+  });
+  if (canDialog) {
+    // The buttons act directly : no reliance on the async `close` event.
+    dialog.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('button[value]') : null;
+      if (!btn) return;
+      e.preventDefault();
+      var target = pending;
+      pending = null;
+      dialog.close();
+      if (btn.value === 'yes' && target) {
+        confirmed = true;
+        sessionSet(confirmKey, '1');
+        target.open = true;
+      }
+    });
+    dialog.addEventListener('cancel', function () { pending = null; }); // Escape
+  }
+
+  // ---- done checkboxes and progress ----
+  var storeKey = (prefix + 'done:') + page;
+  var state = load(storeKey) || {};
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-unit]'));
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav a[data-step]'));
+
+  function paint() {
+    var doneCount = 0;
+    var total = 0;
+    boxes.forEach(function (box) {
+      var unit = box.getAttribute('data-unit');
+      var on = !!state[unit];
+      box.checked = on;
+      var card = box.closest('[data-card]');
+      if (card) card.classList.toggle('is-done', on);
+      if (box.getAttribute('data-optional') !== '1') {
+        total++;
+        if (on) doneCount++;
+      }
+    });
+    navLinks.forEach(function (a) {
+      var step = a.getAttribute('data-step');
+      var mine = boxes.filter(function (b) { return b.getAttribute('data-step') === step; });
+      var n = mine.filter(function (b) { return !!state[b.getAttribute('data-unit')]; }).length;
+      var count = a.querySelector('.count');
+      if (count) count.textContent = n + '/' + mine.length;
+      a.parentNode.classList.toggle('complete', mine.length > 0 && n === mine.length);
+    });
+    var meter = document.querySelector('.meter > i');
+    if (meter) meter.style.width = (total ? Math.round(100 * doneCount / total) : 0) + '%';
+    var text = document.querySelector('.overall-text');
+    if (text) text.textContent = doneCount + ' of ' + total + ' done';
+  }
+  boxes.forEach(function (box) {
+    box.addEventListener('change', function () {
+      var unit = box.getAttribute('data-unit');
+      if (box.checked) state[unit] = true; else delete state[unit];
+      save(storeKey, state);
+      paint();
+    });
+  });
+  paint();
+  if (!storageOk) {
+    var overall = document.querySelector('.nav .overall');
+    if (overall) {
+      var note = document.createElement('div');
+      note.className = 'nosave';
+      note.textContent = 'This browser does not keep your ticks after you close the page.';
+      overall.appendChild(note);
+    }
+  }
+
+  // ---- slide previews : a slide title in a hint opens the slide ----
+  // The slide sits in a shadow root, so the theme's CSS and the site's CSS never meet.
+  var slideDialog = document.getElementById('slide-dialog');
+  if (slideDialog && typeof slideDialog.showModal === 'function' && document.head.attachShadow) {
+    document.documentElement.classList.add('slides-ok');
+    var slideRoot = slideDialog.querySelector('.slide-host').attachShadow({ mode: 'open' });
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('button.slide-ref') : null;
+      if (!btn) return;
+      var tpl = document.getElementById('slide-' + btn.getAttribute('data-slide'));
+      if (!tpl) return;
+      var css = document.getElementById(tpl.getAttribute('data-css'));
+      var frame = document.createElement('style');
+      frame.textContent = ':host { display: block; } div.marpit > svg { display: block; width: 100%; height: auto; }';
+      slideRoot.innerHTML = '';
+      if (css) slideRoot.appendChild(css.content.cloneNode(true));
+      slideRoot.appendChild(frame);
+      slideRoot.appendChild(tpl.content.cloneNode(true));
+      slideDialog.querySelector('.slide-module').textContent = tpl.getAttribute('data-module');
+      slideDialog.querySelector('h2').textContent = tpl.getAttribute('data-title');
+      slideDialog.querySelector('a.deck-link').setAttribute('href', tpl.getAttribute('data-deck'));
+      slideDialog.showModal();
+    });
+    // A click outside the dialog box, on the backdrop, closes it too.
+    slideDialog.addEventListener('click', function (e) {
+      if (e.target !== slideDialog) return;
+      var r = slideDialog.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) slideDialog.close();
+    });
+  }
+
+  // ---- nav : mark the step being read ----
+  if ('IntersectionObserver' in window && navLinks.length) {
+    var byStep = {};
+    navLinks.forEach(function (a) { byStep[a.getAttribute('data-step')] = a; });
+    var visible = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { visible[en.target.getAttribute('data-step')] = en.isIntersecting; });
+      var first = Object.keys(byStep).filter(function (k) { return visible[k]; })[0];
+      if (first === undefined) return;
+      navLinks.forEach(function (a) { a.classList.toggle('current', a === byStep[first]); });
+    }, { rootMargin: '-20% 0px -60% 0px' });
+    Array.prototype.forEach.call(document.querySelectorAll('section.step[data-step]'), function (s) { io.observe(s); });
+  }
+})();
+
+/* Exercise site : Easter eggs, inlined after site.js by build-site.ts.
+   Nothing here is needed to do an exercise. Every egg is off until a reader goes looking :
+   a word typed outside a text field, the Konami code, a few clicks on the logo.
+   ?party in the URL starts party mode, for the trainer's screen.
+   Motion stays off for a reader who asked the system for reduced motion. */
+(function () {
+  'use strict';
+
+  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+  var COLOURS = ['#1d4f91', '#7fb2f0', '#17663f', '#82d3a5', '#ebc775', '#e25822', '#baa6f2', '#ff5fa2'];
+
+  // ---- toast ----
+  var toastEl = null;
+  var toastTimer = null;
+  function toast(text, ms) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'egg-toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, ms || 3800);
+  }
+
+  // ---- confetti : one canvas, removed when the last piece has fallen ----
+  var canvas = null;
+  var pieces = [];
+  function confetti(opts) {
+    if (calm) return;
+    opts = opts || {};
+    var n = opts.count || 160;
+    var x0 = opts.x == null ? innerWidth / 2 : opts.x;
+    var y0 = opts.y == null ? innerHeight * 0.35 : opts.y;
+    var palette = opts.colours || COLOURS;
+    for (var i = 0; i < n; i++) {
+      var a = opts.rain ? Math.PI / 2 : Math.random() * Math.PI * 2;
+      var v = opts.rain ? 1 + Math.random() * 2 : 4 + Math.random() * (opts.speed || 9);
+      pieces.push({
+        x: opts.rain ? Math.random() * innerWidth : x0,
+        y: opts.rain ? -20 - Math.random() * innerHeight * 0.5 : y0,
+        vx: Math.cos(a) * v,
+        vy: Math.sin(a) * v - (opts.rain ? 0 : 4),
+        r: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        w: opts.small ? 3 : 6 + Math.random() * 6,
+        h: opts.small ? 3 : 4 + Math.random() * 6,
+        c: palette[(Math.random() * palette.length) | 0],
+        life: 0
+      });
+    }
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.className = 'egg-canvas';
+      canvas.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(canvas);
+      requestAnimationFrame(frame);
+    }
+  }
+  function frame() {
+    var dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== innerWidth * dpr || canvas.height !== innerHeight * dpr) {
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+    }
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    pieces = pieces.filter(function (p) { return p.y < innerHeight + 30 && p.life < 600; });
+    pieces.forEach(function (p) {
+      p.life++;
+      p.vy += 0.18;
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.r += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.r);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.life / 8)));
+      ctx.restore();
+    });
+    if (pieces.length) {
+      requestAnimationFrame(frame);
+    } else {
+      canvas.remove();
+      canvas = null;
+    }
+  }
+
+  // ---- party mode ----
+  var partyRain = null;
+  var ball = null;
+  function party(on) {
+    if (on === undefined) on = !root.classList.contains('party');
+    root.classList.toggle('party', on);
+    clearInterval(partyRain);
+    if (ball) { ball.remove(); ball = null; }
+    if (on) {
+      ball = document.createElement('div');
+      ball.className = 'egg-ball';
+      ball.setAttribute('aria-hidden', 'true');
+      ball.textContent = '🪩'; // mirror ball
+      document.body.appendChild(ball);
+      confetti({ count: 220 });
+      partyRain = setInterval(function () { confetti({ rain: true, count: 40 }); }, 1800);
+      toast('Party mode on. Press Esc to go back to work.', 5000);
+    } else {
+      toast('Party mode off. Back to the DataFrames.');
+    }
+  }
+
+  // ---- a plane across the screen : the broadcast join ships the small table everywhere ----
+  function flyover(banner) {
+    if (calm) { toast(banner); return; }
+    var plane = document.createElement('div');
+    plane.className = 'egg-plane';
+    plane.setAttribute('aria-hidden', 'true');
+    plane.innerHTML = '<span class="banner"></span><span class="craft">✈️</span>';
+    plane.querySelector('.banner').textContent = banner;
+    plane.style.top = (12 + Math.random() * 50) + 'vh';
+    document.body.appendChild(plane);
+    setTimeout(function () { plane.remove(); }, 6200);
+  }
+
+  // ---- shuffle : every card moves partitions for a moment ----
+  function shuffleCards() {
+    var cards = document.querySelectorAll('.card, .ex-row, .step > h2');
+    if (calm || !cards.length) return;
+    Array.prototype.forEach.call(cards, function (c) {
+      c.style.transition = 'transform 0.45s cubic-bezier(.3,1.6,.5,1)';
+      c.style.transform = 'translate(' + ((Math.random() - 0.5) * 240) + 'px,' + ((Math.random() - 0.5) * 120) + 'px) rotate(' + ((Math.random() - 0.5) * 24) + 'deg)';
+    });
+    setTimeout(function () {
+      Array.prototype.forEach.call(cards, function (c) { c.style.transform = ''; });
+    }, 900);
+    setTimeout(function () {
+      Array.prototype.forEach.call(cards, function (c) { c.style.transition = ''; });
+    }, 1500);
+  }
+
+  function shake() {
+    if (calm) return;
+    root.classList.remove('egg-shake');
+    void root.offsetWidth; // restart the animation
+    root.classList.add('egg-shake');
+    setTimeout(function () { root.classList.remove('egg-shake'); }, 700);
+  }
+
+  // ---- typed words : Spark vocabulary, typed anywhere that is not a text field ----
+  var lazyPlan = 0;
+  var words = {
+    party: function () { party(); },
+    spark: function () {
+      confetti({ count: 120, speed: 14, small: true, colours: ['#ffd23f', '#ff9f1c', '#e25822', '#fff3b0'] });
+      toast('⚡ SparkSession started. That took less than the usual two to four minutes.');
+    },
+    lazy: function () {
+      lazyPlan++;
+      toast('Transformation added to the plan (' + lazyPlan + ' so far). Nothing ran : Spark waits for an action. Try collect.', 5000);
+    },
+    collect: function () {
+      if (!lazyPlan) {
+        toast('collect() on an empty plan returns []. Be lazy first.');
+        return;
+      }
+      confetti({ count: 60 + lazyPlan * 60 });
+      toast('Action! ' + lazyPlan + ' lazy transformation' + (lazyPlan > 1 ? 's' : '') + ' ran in one job. Everything came back to the driver.', 5000);
+      lazyPlan = 0;
+    },
+    shuffle: function () {
+      shuffleCards();
+      toast('Wide transformation : everything moved between partitions. That is why a shuffle is expensive.', 4500);
+    },
+    broadcast: function () { flyover('broadcast(airports)'); },
+    klm: function () { flyover('KL1234 AMS → Apeldoorn, delayed by a skewed join'); },
+    oom: function () {
+      shake();
+      toast('java.lang.OutOfMemoryError : Java heap space. Not really. But that is what collect() on a billion rows looks like.', 5500);
+    },
+    cache: function () {
+      toast('Cached. The second time you type it, it is faster. (It is not. This is a web page.)');
+    },
+    matrix: function () { matrixRain(); }
+  };
+
+  // ---- matrix : the digital rain, made of actual matrices, then the Terminal theme ----
+  var raining = false;
+  function matrixRain() {
+    function wakeUp() {
+      var item = document.querySelector('[data-theme-id="terminal"]');
+      if (item) item.click();
+      toast('Wake up, analyst. The DataFrame has you.', 5000);
+    }
+    if (calm) { wakeUp(); return; }
+    if (raining) return;
+    raining = true;
+
+    var c = document.createElement('canvas');
+    c.className = 'egg-matrix';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(c);
+    var dpr = window.devicePixelRatio || 1;
+    var W = innerWidth, H = innerHeight;
+    c.width = W * dpr;
+    c.height = H * dpr;
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    var FONT = 13, LINE = 15, CHAR = 8.5, GAP = 10;
+    var FAMOUS = [
+      [[1, 0], [0, 1]],
+      [[0, 1], [1, 0]],
+      [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+      [[0, -1], [1, 0]],
+      [[1, 1], [1, 0]],
+      [[2, -1, 0], [-1, 2, -1], [0, -1, 2]]
+    ];
+    function cell() {
+      var r = Math.random();
+      if (r < 0.15) return '-' + ((Math.random() * 9 + 1) | 0);
+      if (r < 0.25) return String(Math.random() < 0.5 ? 0 : 1);
+      return String((Math.random() * 10) | 0);
+    }
+    function randomMatrix() {
+      if (Math.random() < 0.12) return FAMOUS[(Math.random() * FAMOUS.length) | 0].map(function (row) { return row.map(String); });
+      var rows = 2 + ((Math.random() * 3) | 0);
+      var cols = Math.random() < 0.25 ? 1 : 2 + ((Math.random() * 2) | 0);
+      var m = [];
+      for (var i = 0; i < rows; i++) {
+        var row = [];
+        for (var j = 0; j < cols; j++) row.push(cell());
+        m.push(row);
+      }
+      return m;
+    }
+    function height(m) { return m.length * LINE + 6; }
+    // Draw a matrix with square brackets, its cells right-aligned in columns of width 2.
+    function drawMatrix(m, x, y, colour) {
+      var cols = m[0].length;
+      var w = cols * CHAR * 2.6 + 8;
+      var h = height(m);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x - 3, y - 2, w + 6, h + 4);
+      ctx.strokeStyle = colour;
+      ctx.fillStyle = colour;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(x + 4, y); ctx.lineTo(x, y); ctx.lineTo(x, y + h); ctx.lineTo(x + 4, y + h);
+      ctx.moveTo(x + w - 4, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w - 4, y + h);
+      ctx.stroke();
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      for (var i = 0; i < m.length; i++) {
+        for (var j = 0; j < cols; j++) {
+          ctx.fillText(m[i][j], x + 6 + (j + 1) * CHAR * 2.6 - 4, y + 4 + i * LINE);
+        }
+      }
+      return w;
+    }
+
+    var COLW = 92;
+    var streams = [];
+    for (var x = 6; x < W - 30; x += COLW) {
+      streams.push({
+        x: x + ((Math.random() * 14) | 0),
+        y: -Math.random() * H * 1.2,
+        every: 5 + ((Math.random() * 6) | 0),
+        tick: 0,
+        last: null
+      });
+    }
+
+    ctx.font = FONT + 'px "Cascadia Mono", Consolas, ui-monospace, monospace';
+    var start = performance.now();
+    var RAIN = 6500, LINE_MS = 2600;
+    var message = 'Wake up, analyst...';
+    var done = false;
+
+    function finish() {
+      if (done) return;
+      done = true;
+      document.removeEventListener('keydown', skip, true);
+      c.removeEventListener('click', skip);
+      c.classList.add('out');
+      wakeUp();
+      setTimeout(function () { c.remove(); raining = false; }, 900);
+    }
+    function skip(e) {
+      if (e.type === 'keydown') { e.preventDefault(); e.stopPropagation(); }
+      finish();
+    }
+    document.addEventListener('keydown', skip, true);
+    c.addEventListener('click', skip);
+
+    function step(now) {
+      if (done) return;
+      var t = now - start;
+      // fade everything a little : the trails
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.font = FONT + 'px "Cascadia Mono", Consolas, ui-monospace, monospace';
+
+      if (t < RAIN) {
+        streams.forEach(function (s) {
+          if (++s.tick % s.every) return;
+          // the old head turns green, the new head is bright
+          if (s.last) drawMatrix(s.last.m, s.x, s.last.y, '#1fd655');
+          var m = randomMatrix();
+          var y = s.last ? s.last.y + height(s.last.m) + GAP : s.y;
+          if (y > H + 40) {
+            s.last = null;
+            s.y = -Math.random() * H * 0.5;
+            return;
+          }
+          if (y > -100) drawMatrix(m, s.x, y, '#d8ffe4');
+          s.last = { m: m, y: y };
+          // now and then, a matrix further up the trail changes its mind
+          if (Math.random() < 0.3 && y > 200) {
+            var m2 = randomMatrix();
+            drawMatrix(m2, s.x, y - 120 - Math.random() * 200, 'rgba(31, 214, 85, 0.55)');
+          }
+        });
+      } else {
+        // the rain stops, the message types itself out
+        var shown = Math.min(message.length, Math.floor((t - RAIN) / 90));
+        ctx.font = '600 28px "Cascadia Mono", Consolas, ui-monospace, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        var full = ctx.measureText(message).width;
+        var x0 = (W - full) / 2;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x0 - 20, H / 2 - 30, full + 60, 60);
+        ctx.fillStyle = '#33ff66';
+        ctx.shadowColor = '#33ff66';
+        ctx.shadowBlur = 12;
+        var text = message.slice(0, shown);
+        ctx.fillText(text, x0, H / 2);
+        if (Math.floor(t / 400) % 2) ctx.fillRect(x0 + ctx.measureText(text).width + 4, H / 2 - 14, 14, 28);
+        ctx.shadowBlur = 0;
+        if (t > RAIN + LINE_MS) { finish(); return; }
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+  var keys = [];
+  var typed = '';
+
+  function inTextField(el) {
+    if (!el) return false;
+    var tag = el.tagName;
+    return tag === 'INPUT' && el.type !== 'checkbox' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || inTextField(e.target)) return;
+    var k = (e.key || '').toLowerCase();
+
+    if (k === 'escape' && root.classList.contains('party')) {
+      if (!document.querySelector('dialog[open]')) party(false);
+      return;
+    }
+
+    keys.push(k);
+    if (keys.length > KONAMI.length) keys.shift();
+    if (keys.join(',') === KONAMI.join(',')) {
+      keys = [];
+      party();
+      return;
+    }
+
+    if (k.length !== 1 || k < 'a' || k > 'z') return;
+    typed = (typed + k).slice(-12);
+    for (var w in words) {
+      if (typed.slice(-w.length) === w) {
+        typed = '';
+        words[w]();
+        return;
+      }
+    }
+  });
+
+  // ---- logo on the index : clicked five times quickly, it spins like a driver waiting on a
+  // straggler. On the index the logo links to the page itself, so holding the click loses nothing.
+  // Elsewhere it stays a plain link home.
+  var logo = root.getAttribute('data-page') === 'index' ? document.querySelector('.topbar img') : null;
+  var logoClicks = [];
+  if (logo) {
+    logo.parentNode.addEventListener('click', function (e) {
+      e.preventDefault();
+      var now = Date.now();
+      logoClicks = logoClicks.filter(function (t) { return now - t < 1500; });
+      logoClicks.push(now);
+      if (logoClicks.length >= 5) {
+        logoClicks = [];
+        logo.classList.remove('egg-spin');
+        void logo.offsetWidth;
+        logo.classList.add('egg-spin');
+        toast('The driver is waiting on one straggler task. It is always the one with Atlanta in it.');
+      }
+    });
+  }
+
+  // ---- the theme picker, unable to make up its mind ----
+  var flicks = [];
+  document.addEventListener('exercise-site:theme', function () {
+    var now = Date.now();
+    flicks = flicks.filter(function (t) { return now - t < 6000; });
+    flicks.push(now);
+    if (flicks.length === 6) {
+      flicks = [];
+      party(true);
+    }
+  });
+
+  // ---- every exercise on the page ticked : a real reward ----
+  function required() {
+    return Array.prototype.filter.call(document.querySelectorAll('input[data-unit]'), function (b) {
+      return b.getAttribute('data-optional') !== '1';
+    });
+  }
+  function allDone() {
+    var r = required();
+    return r.length > 0 && r.every(function (b) { return b.checked; });
+  }
+  var wasDone = allDone();
+  document.addEventListener('change', function (e) {
+    if (!e.target.matches || !e.target.matches('input[data-unit]')) return;
+    var b = e.target;
+    if (b.checked && !calm) {
+      var r = b.getBoundingClientRect();
+      confetti({ count: 24, speed: 5, small: true, x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    }
+    var now = allDone();
+    if (now && !wasDone) {
+      confetti({ count: 260 });
+      setTimeout(function () { confetti({ rain: true, count: 120 }); }, 400);
+      toast('Every exercise on this page is done. Well played.', 5000);
+    }
+    wasDone = now;
+  });
+
+  if (/[?&]party\b/.test(location.search)) party(true);
+
+  // ---- for whoever opens the developer tools ----
+  try {
+    console.log(
+      '%c⚡ ' + (document.documentElement.getAttribute('data-course-title') || 'Exercises') + ' %c\nYou opened the console. That is the right instinct.\n' +
+      'Spark has a word for everything. Try typing a few of them on the page, outside a text box.\n' +
+      'Old gamers know another way in.',
+      'font: 700 16px system-ui; color: #e25822',
+      'font: 13px system-ui'
+    );
+  } catch (e) { /* no console */ }
+})();
+
+</script>
+</body>
+</html>
