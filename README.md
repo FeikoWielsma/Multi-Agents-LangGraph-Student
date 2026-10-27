@@ -4,7 +4,20 @@ SpiralTrain ARI520. Three days of building systems of agents with LangGraph :
 the graph runtime, the multi-agent patterns, agent communication over A2A, Deep
 Agents, and serving and evaluating a system of agents.
 
-## Setup
+## Get the material
+
+The student repository is
+[FeikoWielsma/Multi-Agents-LangGraph-Student](https://github.com/FeikoWielsma/Multi-Agents-LangGraph-Student)
+on GitHub. Clone it, or use **Code > Download ZIP**. The trainer may push fixes
+during the course, and `git pull` gets them. Save an exercise under a new name
+before you fill it in, for example `exercise01-mine.ipynb`, so a pull never clashes
+with your work.
+
+Your trainer hands out the course key. Keep it out of notebooks, chats and commits.
+
+There are three ways to run the notebooks. Pick one.
+
+## On your own computer
 
 1. Install [uv](https://docs.astral.sh/uv/)
 2. `uv sync --group server` in this folder
@@ -12,17 +25,42 @@ Agents, and serving and evaluating a system of agents.
 4. `uv run python check_setup.py` ; it should end with every check passed
 5. `uv run jupyter lab`
 
-The full walkthrough is exercise 0 in the exercises PDF. On the course laptop the
+The full walkthrough is exercise 0 in the exercises PDF. On a classroom laptop the
 trainer has done these steps already.
 
-## Colab, if the laptop setup fails
+## In GitHub Codespaces
 
-The first cell of every notebook detects Colab, installs the pinned packages and
-downloads the data it needs. Add the course key once : click the key icon in the
-left sidebar, name the secret `COURSE_API_KEY`, paste the key, and switch notebook
-access on. Notebooks that start a local Agent Server with `langgraph dev` (module 06
-demo03 and demo04, module 09, exercises 05 and 11, capstone stages 3 and 5) need
-the laptop.
+A Codespace is the same setup in your browser, with nothing to install. Every
+notebook runs there, including the ones that start an Agent Server.
+
+1. Add the course key once, at [github.com/settings/codespaces](https://github.com/settings/codespaces) :
+   **New secret**, name `COURSE_API_KEY`, paste the key, and give it access to
+   `FeikoWielsma/Multi-Agents-LangGraph-Student`
+2. Open [codespaces.new/FeikoWielsma/Multi-Agents-LangGraph-Student](https://codespaces.new/FeikoWielsma/Multi-Agents-LangGraph-Student)
+   and click **Create codespace**. The first start takes a few minutes : it installs
+   the locked packages
+3. In the terminal, run `uv run python check_setup.py`
+4. Open a notebook from the explorer ; when VS Code asks for a kernel, pick the
+   `.venv` Python environment
+
+If you added the secret after creating the Codespace, stop and restart it. Stop
+the Codespace when you are done for the day : a GitHub account includes a monthly
+allowance of Codespace hours, and a stopped Codespace does not use it.
+
+## In Google Colab
+
+Colab runs every notebook except the ones that start a local Agent Server with
+`langgraph dev` : module 06 demo03 and demo04, module 09, exercises 05 and 11, and
+capstone stages 3 and 5. Use a Codespace for those.
+
+1. Add the course key once : click the key icon in the left sidebar, name the
+   secret `COURSE_API_KEY`, paste the key, and switch notebook access on
+2. Open a notebook with **File > Open notebook > GitHub**, search for
+   `FeikoWielsma/Multi-Agents-LangGraph-Student`, and pick it. Exercise 1, for example :
+   [open in Colab](https://colab.research.google.com/github/FeikoWielsma/Multi-Agents-LangGraph-Student/blob/main/exercises/exercise01-graphs-and-loops.ipynb)
+3. Run the first cell. It installs the pinned packages and downloads the data it needs
+4. Save your work with **File > Save a copy in Drive** ; Colab does not keep changes
+   to a notebook opened from GitHub
 
 Do not paste anything confidential from your employer into these notebooks. The
 exercises never need real data.

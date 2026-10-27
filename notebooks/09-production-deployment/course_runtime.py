@@ -8,7 +8,7 @@ import warnings
 from pathlib import Path
 
 IN_COLAB = "google.colab" in sys.modules
-COURSE_FILES = "https://raw.githubusercontent.com/FeikoWielsma/Multi-Agents-LangGraph/main/"
+COURSE_FILES = "https://raw.githubusercontent.com/FeikoWielsma/Multi-Agents-LangGraph-Student/main/"
 ROOT = None
 
 if IN_COLAB:

@@ -3,6 +3,7 @@
 **/.venv/
 **/.ipynb_checkpoints/
 **/*.db
+!/data/**/*.db
 **/.langgraph_api/
 **/workspace/
 exercises/*.py

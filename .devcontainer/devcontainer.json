@@ -1,0 +1,32 @@
+// GitHub Codespaces setup for students who follow the course online.
+// It gives the same environment the README asks a local student to build:
+// Python 3.12, uv, the locked packages with the server group, and VS Code with
+// the Python and Jupyter extensions. The course key comes from a Codespaces
+// secret named COURSE_API_KEY ; post-create.sh explains it when it is missing.
+{
+  "name": "Multi Agents with LangGraph (ARI520)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "hostRequirements": { "cpus": 2, "memory": "8gb" },
+  "secrets": {
+    "COURSE_API_KEY": {
+      "description": "The course key your trainer hands out."
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md"]
+    },
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "jupyter.notebookFileRoot": "${fileDirname}",
+        "workbench.startupEditor": "readme"
+      }
+    }
+  }
+}
