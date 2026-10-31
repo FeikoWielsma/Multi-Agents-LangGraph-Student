@@ -1010,7 +1010,7 @@ a.ex-row:hover { border-color: var(--accent); }
 </div>
 <section class="step" id="step-1" data-step="1">
 <h2><span class="num">Step 1</span><span class="title">The desk and the cases</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="1" data-step="1"> Done</label></h2>
-<p>Run the cell that builds <code>parts_agent</code>, <code>manuals_agent</code> and <code>desk</code>. Read their tool lists, the case ids in <code>SELECTED</code> and the <code>REQUIRED</code> patterns beside each case's <code>answer_contains</code>, then run the check. <code>answer_contains</code> in <code>eval.jsonl</code> mixes alternatives (<code>db-01</code>) with facts that must all appear (<code>mix-01</code>) ; <code>REQUIRED</code> makes every fact explicit and matches numbers on word boundaries. A no-stock <code>0</code> counts only next to a stock word, so the <code>0</code> in <code>firmware 5.0</code> does not.</p>
+<p>Run the cell that builds <code>parts_agent</code>, <code>manuals_agent</code> and <code>desk</code>. Read their tool lists, the case ids in <code>SELECTED</code> and the <code>REQUIRED</code> patterns beside each case's <code>answer_contains</code>, then run the check. <code>answer_contains</code> in <code>eval.jsonl</code> mixes alternatives (<code>db-01</code>) with facts that must all appear (<code>mix-01</code>) ; <code>REQUIRED</code> makes every fact explicit and matches numbers on word boundaries. A no-stock <code>0</code> counts only next to a stock word. The <code>0</code> in <code>firmware 5.0</code> does not count.</p>
 <p>Which six case ids does the cell select, and which of them have more than one required fact?</p>
 
 </section>
@@ -1022,13 +1022,13 @@ a.ex-row:hover { border-color: var(--accent); }
 </section>
 <section class="step" id="step-3" data-step="3">
 <h2><span class="num">Step 3</span><span class="title">Trajectory match</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="3" data-step="3"> Done</label></h2>
-<p>Run the live <code>man-01</code> comparison against the full <code>reference</code> (question, call, tool result, answer) and the <code>short_reference</code> (question and call). Strict compares the whole message sequence, roles and count included. Fill <code>trajectory_match_mode</code> in the fixture loop to compare <code>strict</code> and <code>unordered</code>, keeping <code>tool_args_match_mode=&quot;ignore&quot;</code>. Run the three fixtures, then the check : <code>reversed_calls</code> reorders two calls inside one message, <code>split_reversed</code> puts the same calls in two messages in reverse order, and <code>one</code> drops a call.</p>
+<p>Run the live <code>man-01</code> comparison against the full <code>reference</code> (question, call, tool result, answer) and the <code>short_reference</code> (question and call). Strict compares the complete message sequence, roles and count included. Fill <code>trajectory_match_mode</code> in the fixture loop to compare <code>strict</code> and <code>unordered</code>, keeping <code>tool_args_match_mode=&quot;ignore&quot;</code>. Run the three fixtures, then the check : <code>reversed_calls</code> reorders two calls inside one message, <code>split_reversed</code> puts the same calls in two messages in reverse order, and <code>one</code> drops a call.</p>
 <p>Why does strict fail on the short reference, and how do the two modes score <code>reversed_calls</code>, <code>split_reversed</code> and <code>one</code>?</p>
 
 </section>
 <section class="step" id="step-4" data-step="4">
 <h2><span class="num">Step 4</span><span class="title">One score per agent</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="4" data-step="4"> Done</label></h2>
-<p>Fill the two agent blanks in <code>per_agent</code> with the specialist for <code>db_case</code> and the specialist for <code>man_case</code>. Run the mixed-case calls and compare each specialist's row with <code>desk_mix</code>, then run the check. <code>tools_ok</code> is a policy check : a specialist can answer correctly outside its lane.</p>
+<p>Fill the two agent blanks in <code>per_agent</code> with the specialist for <code>db_case</code> and the specialist for <code>man_case</code>. Run the mixed-case calls and compare each specialist's row with <code>desk_mix</code>, then run the check. <code>tools_ok</code> is a policy check : a specialist can answer correctly without using every expected tool.</p>
 <p>Which <code>mix-01</code> rows pass <code>facts_ok</code> but fail <code>tools_ok</code>, and is their answer wrong?</p>
 
 </section>

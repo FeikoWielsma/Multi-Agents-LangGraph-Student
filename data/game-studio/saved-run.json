@@ -1,0 +1,244 @@
+{
+ "note": "One real run of the Comet Arcade crew on openai/gpt-6-luna, reasoning off, through the course setup cell. Nothing here is edited. Made by build/probe_game_crew.py.",
+ "date": "2026-10-30 22:20",
+ "label": "kit-v1",
+ "result": {
+  "seed": 11,
+  "brief": "second-chance",
+  "model": "openai/gpt-6-luna",
+  "passed": true,
+  "twist": "shield",
+  "attempts": 2,
+  "model_calls": 5,
+  "input_tokens": 6390,
+  "output_tokens": 2976,
+  "seconds": 40.5,
+  "cost_reported": 0.002067,
+  "cost_list_price": 0.002127,
+  "tests_total": 21,
+  "failures": [],
+  "bot_mean_eaten": 66.0,
+  "best_score": 80,
+  "theme_ok": true,
+  "logic_lines": 149,
+  "error": null
+ },
+ "board": {
+  "brief": "Playtesters love Comet Snake but rage-quit when one comet ends a long run. Give them one way to survive.",
+  "design": {
+   "title": "Comet Snake: Second Chance",
+   "twist": "shield",
+   "rules": [
+    "init sets a new field shield to false.",
+    "Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'shield' with spawnExtra.",
+    "When the head lands on a shield extra, shield becomes true and the extra is removed.",
+    "A comet hit while shield is true does not end the game : shield becomes false and that comet is removed.",
+    "A second hit ends the game."
+   ]
+  },
+  "theme": {
+   "name": "Second Chance",
+   "background": "#101827",
+   "grid": "#1e2c40",
+   "head": "#ff5d73",
+   "body": "#4ed6b0",
+   "star": "#ffe66d",
+   "comet": "#69b9ff",
+   "extra": "#c792ff",
+   "sprites": {
+    "star": [
+     "...#...",
+     "..###..",
+     ".#####.",
+     "#######",
+     ".#####.",
+     "..###..",
+     "...#..."
+    ],
+    "comet": [
+     "....##.",
+     "...####",
+     "..####.",
+     "..###..",
+     ".###...",
+     "####...",
+     "##....."
+    ],
+    "extra": [
+     "...#...",
+     "..###..",
+     ".#####.",
+     "#######",
+     ".#####.",
+     "..#.#..",
+     ".#...#."
+    ]
+   }
+  },
+  "attempts": 2,
+  "passed": true,
+  "report": {
+   "twist": "shield",
+   "total": 21,
+   "failures": [],
+   "bot": {
+    "games": [
+     {
+      "eaten": 56,
+      "score": 56,
+      "ticks": 895,
+      "reason": "self",
+      "tickMs": 60,
+      "length": 59,
+      "comets": 6
+     },
+     {
+      "eaten": 66,
+      "score": 66,
+      "ticks": 1079,
+      "reason": "self",
+      "tickMs": 60,
+      "length": 69,
+      "comets": 6
+     },
+     {
+      "eaten": 65,
+      "score": 65,
+      "ticks": 1027,
+      "reason": "self",
+      "tickMs": 60,
+      "length": 68,
+      "comets": 6
+     },
+     {
+      "eaten": 80,
+      "score": 80,
+      "ticks": 1500,
+      "reason": null,
+      "tickMs": 60,
+      "length": 83,
+      "comets": 6
+     },
+     {
+      "eaten": 63,
+      "score": 63,
+      "ticks": 993,
+      "reason": "self",
+      "tickMs": 60,
+      "length": 66,
+      "comets": 6
+     }
+    ],
+    "mean_eaten": 66.0,
+    "best_score": 80
+   },
+   "passed": true
+  },
+  "bugs": [
+   "**Self-collision is not detected when the head lands on the body.** Rule 8 says landing on any body cell ends the game with reason `self`, but the test ends with `over=false` and `reason=null` at cell (5,6). The likely cause is the self-collision check in `step()`: it excludes the last segment with `state.snake.slice(1, -1)` when no star was eaten."
+  ],
+  "logic": "const COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right',\n    stars: [],\n    comets: [],\n    extras: [],\n    score: 0,\n    eaten: 0,\n    tickMs: START_MS,\n    ticks: 0,\n    over: false,\n    reason: null,\n    shield: false,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  spawnComet(state);\n  spawnComet(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  if (previous.over) return previous;\n\n  const state = clone(previous);\n\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) {\n    state.dir = input;\n  }\n\n  const vector = VECTORS[state.dir];\n  const oldHead = state.snake[0];\n  const head = {\n    x: wrap(oldHead.x + vector.x, COLS),\n    y: wrap(oldHead.y + vector.y, ROWS),\n  };\n\n  const oldComets = state.comets.map(comet => ({ x: comet.x, y: comet.y }));\n  for (const comet of state.comets) {\n    comet.x = wrap(comet.x + comet.dx, COLS);\n    comet.y = wrap(comet.y + comet.dy, ROWS);\n  }\n\n  state.snake.unshift(head);\n\n  const starIndex = state.stars.findIndex(item => same(item, head));\n  const ateStar = starIndex >= 0;\n  if (ateStar) {\n    state.stars.splice(starIndex, 1);\n    state.score += 1;\n    state.eaten += 1;\n\n    if (state.eaten % 5 === 0) {\n      state.tickMs = Math.max(60, state.tickMs - 20);\n      if (state.comets.length < 6) spawnComet(state);\n    }\n    if (state.eaten % 4 === 0) spawnExtra(state, 'shield');\n\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n\n  const shieldIndex = state.extras.findIndex(extra => extra.kind === 'shield' && same(extra, head));\n  if (shieldIndex >= 0) {\n    state.extras.splice(shieldIndex, 1);\n    state.shield = true;\n  }\n\n  const cometHitIndices = [];\n  for (let i = 0; i < state.comets.length; i++) {\n    const comet = state.comets[i];\n    const swapped = same(oldHead, comet) && same(head, oldComets[i]);\n    if (same(head, comet) || swapped) cometHitIndices.push(i);\n  }\n\n  for (let i = cometHitIndices.length - 1; i >= 0; i--) {\n    const index = cometHitIndices[i];\n    if (state.shield) {\n      state.shield = false;\n      state.comets.splice(index, 1);\n    } else {\n      state.over = true;\n      state.reason = 'comet';\n      break;\n    }\n  }\n\n  if (!state.over) {\n    // The tail has already been removed when the snake did not grow, so\n    // every remaining segment after the head is a body cell to check.\n    if (state.snake.slice(1).some(segment => same(segment, head))) {\n      state.over = true;\n      state.reason = 'self';\n    }\n  }\n\n  state.ticks += 1;\n  return state;\n}"
+ },
+ "calls": [
+  {
+   "node": "designer",
+   "messages": [
+    {
+     "role": "system",
+     "content": "You are the Designer at Comet Arcade, a studio of agents that builds small canvas games. Turn the brief into rules. Pick the one twist from the menu that answers the brief. Copy its rules exactly, with the same field names, kinds and numbers, and add nothing else."
+    },
+    {
+     "role": "human",
+     "content": "Brief : Playtesters love Comet Snake but rage-quit when one comet ends a long run. Give them one way to survive.\n\nTwist menu :\n- golden : Golden stars. Greedy players chase a rare big prize. Every third star eaten (eaten 3, 6, 9 ...) also places one extra of kind 'golden' with spawnExtra. When the head lands on a golden extra, score goes up by 3 and the extra is removed. The snake does not grow and eaten does not change.\n- wormhole : Wormholes. Two linked holes let the snake jump across the map. init places exactly two extras of kind 'wormhole' with spawnExtra. When the head lands on a wormhole it moves in the same step to the other wormhole. Stars, comets and body are then checked at the cell where the head ends up. Wormholes stay on the board. The length of the snake does not change.\n- shield : Shields. One second chance against a comet. init sets a new field shield to false. Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'shield' with spawnExtra. When the head lands on a shield extra, shield becomes true and the extra is removed. A comet hit while shield is true does not end the game : shield becomes false and that comet is removed. A second hit ends the game.\n- clock : Frozen time. A clock stops the comets for a moment. init sets a new field frozen to 0. Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'clock' with spawnExtra. When the head lands on a clock extra, frozen becomes 20 and the extra is removed. On a step that starts with frozen above 0, comets do not move and frozen goes down by 1."
+    }
+   ],
+   "seconds": 3.81,
+   "input_tokens": 574,
+   "output_tokens": 111,
+   "cost": 0.0001129,
+   "provider": "openai",
+   "reply": "{\"title\":\"Comet Snake: Second Chance\",\"twist\":\"shield\",\"rules\":[\"init sets a new field shield to false.\",\"Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'shield' with spawnExtra.\",\"When the head lands on a shield extra, shield becomes true and the extra is removed.\",\"A comet hit while shield is true does not end the game : shield becomes false and that comet is removed.\",\"A second hit ends the game.\"]}",
+   "tool_calls": []
+  },
+  {
+   "node": "artist",
+   "messages": [
+    {
+     "role": "system",
+     "content": "You are the Artist at Comet Arcade. You pick the colours and draw sprites for a space game. A sprite is 7 strings of exactly 7 characters : # for a filled pixel, . for an empty one. Background and grid are dark. Head, body, star, comet and extra must stand out from the background and from each other."
+    },
+    {
+     "role": "human",
+     "content": "Game : Comet Snake: Second Chance\nThe extra object : shield"
+    }
+   ],
+   "seconds": 2.72,
+   "input_tokens": 404,
+   "output_tokens": 149,
+   "cost": 0.0001149,
+   "provider": "openai",
+   "reply": "{\"name\":\"Second Chance\",\"background\":\"#101827\",\"grid\":\"#1e2c40\",\"head\":\"#ff5d73\",\"body\":\"#4ed6b0\",\"star\":\"#ffe66d\",\"comet\":\"#69b9ff\",\"extra\":\"#c792ff\",\"sprites\":{\"star\":[\"...#...\",\"..###..\",\".#####.\",\"#######\",\".#####.\",\"..###..\",\"...#...\"],\"comet\":[\"....##.\",\"...####\",\"..####.\",\"..###..\",\".###...\",\"####...\",\"##.....\"],\"extra\":[\"...#...\",\"..###..\",\".#####.\",\"#######\",\".#####.\",\"..#.#..\",\".#...#.\"]}}",
+   "tool_calls": []
+  },
+  {
+   "node": "coder",
+   "messages": [
+    {
+     "role": "system",
+     "content": "You are the Coder at Comet Arcade. You write the pure game logic of a one-file canvas game. The kit draws the state and reads the keyboard, so you write no DOM code."
+    },
+    {
+     "role": "human",
+     "content": "# Comet Snake : rules\n\nA game is one HTML file. The kit holds the canvas, the drawing, the keyboard and the bot. The `logic` block holds\nevery rule as pure JavaScript. Tests and the bot run that block headless, so it has no DOM, no clock and no\n`Math.random`. Randomness comes from `nextRandom(state)` and the helpers built on it.\n\n## The state\n\n`init(seed)` returns a plain JSON object with these fields. A twist may add the fields it names.\n\n| field | meaning |\n| --- | --- |\n| `snake` | list of `{x, y}`, head first |\n| `dir` | `up`, `down`, `left` or `right` |\n| `stars` | list of `{x, y}`, always one star while the game runs |\n| `comets` | list of `{x, y, dx, dy}` |\n| `extras` | list of `{x, y, kind}`, the objects a twist adds |\n| `score` | points |\n| `eaten` | stars eaten |\n| `tickMs` | milliseconds between ticks, starts at 200 |\n| `ticks` | steps played |\n| `over`, `reason` | `over` is true when the game ended ; `reason` is `comet` or `self`, otherwise `null` |\n| `seed` | the random seed |\n\n`step(state, input)` returns a new state and must not change the state it received. `input` is a direction or `null`.\n\n## The rules\n\n1. Movement : each step the head moves one cell in `dir`, and the tail follows. The length stays the same\n2. Steering : an input sets `dir`. An input opposite to `dir` is ignored\n3. Space wraps : leaving one edge enters at the opposite edge\n4. Stars : when the head lands on a star, the snake grows by one, `score` and `eaten` go up by one, and a new star appears\n5. Comets start : `init` places 2 comets with `spawnComet`\n6. Comets move : every step each comet moves by `(dx, dy)`, wrapping at the edges like the snake\n7. Comet hit : when a comet and the head are on the same cell after both moved, `over` is true and `reason` is `comet`.\n   The same holds when the head and a comet swap cells in one step. A comet that crosses the body does nothing\n8. Self hit : when the head lands on a body cell, `over` is true and `reason` is `self`. The cell the tail leaves in this\n   step is free, so a snake may follow its own tail\n9. Speed : every fifth star (eaten 5, 10, 15 ...) lowers `tickMs` by 20, never below 60\n10. More comets : every fifth star adds one comet with `spawnComet`, up to 6 comets\n11. Game over is final : `step` on a finished game returns the same state, unchanged, and `ticks` stops\n12. `ticks` goes up by one on every step of a running game, also on the step that ends it\n\n\n## The twist : Comet Snake: Second Chance\n\n- init sets a new field shield to false.\n- Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'shield' with spawnExtra.\n- When the head lands on a shield extra, shield becomes true and the extra is removed.\n- A comet hit while shield is true does not end the game : shield becomes false and that comet is removed.\n- A second hit ends the game.\n\n## The logic block\n\n```javascript\nconst COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right', stars: [], comets: [], extras: [],\n    score: 0, eaten: 0, tickMs: START_MS, ticks: 0, over: false, reason: null,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  const state = clone(previous);\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) state.dir = input;\n  const vector = VECTORS[state.dir];\n  const head = { x: wrap(state.snake[0].x + vector.x, COLS), y: wrap(state.snake[0].y + vector.y, ROWS) };\n\n  state.snake.unshift(head);\n  const star = state.stars.findIndex(item => same(item, head));\n  if (star >= 0) {\n    state.stars.splice(star, 1);\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n  state.ticks += 1;\n  return state;\n}\n\n```\n\nReturn the complete logic block with every rule and the twist in it, in one javascript code block. Keep every helper. Keep the function names init and step."
+    }
+   ],
+   "seconds": 8.56,
+   "input_tokens": 1702,
+   "output_tokens": 1304,
+   "cost": 0.00066929,
+   "provider": "openai",
+   "reply": "```javascript\nconst COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right',\n    stars: [],\n    comets: [],\n    extras: [],\n    score: 0,\n    eaten: 0,\n    tickMs: START_MS,\n    ticks: 0,\n    over: false,\n    reason: null,\n    shield: false,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  spawnComet(state);\n  spawnComet(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  if (previous.over) return previous;\n\n  const state = clone(previous);\n\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) {\n    state.dir = input;\n  }\n\n  const vector = VECTORS[state.dir];\n  const oldHead = state.snake[0];\n  const head = {\n    x: wrap(oldHead.x + vector.x, COLS),\n    y: wrap(oldHead.y + vector.y, ROWS),\n  };\n\n  const oldComets = state.comets.map(comet => ({ x: comet.x, y: comet.y }));\n  for (const comet of state.comets) {\n    comet.x = wrap(comet.x + comet.dx, COLS);\n    comet.y = wrap(comet.y + comet.dy, ROWS);\n  }\n\n  state.snake.unshift(head);\n\n  const starIndex = state.stars.findIndex(item => same(item, head));\n  const ateStar = starIndex >= 0;\n  if (ateStar) {\n    state.stars.splice(starIndex, 1);\n    state.score += 1;\n    state.eaten += 1;\n\n    if (state.eaten % 5 === 0) {\n      state.tickMs = Math.max(60, state.tickMs - 20);\n      if (state.comets.length < 6) spawnComet(state);\n    }\n    if (state.eaten % 4 === 0) spawnExtra(state, 'shield');\n\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n\n  const shieldIndex = state.extras.findIndex(extra => extra.kind === 'shield' && same(extra, head));\n  if (shieldIndex >= 0) {\n    state.extras.splice(shieldIndex, 1);\n    state.shield = true;\n  }\n\n  const cometHitIndices = [];\n  for (let i = 0; i < state.comets.length; i++) {\n    const comet = state.comets[i];\n    const swapped = same(oldHead, comet) && same(head, oldComets[i]);\n    if (same(head, comet) || swapped) cometHitIndices.push(i);\n  }\n\n  for (let i = cometHitIndices.length - 1; i >= 0; i--) {\n    const index = cometHitIndices[i];\n    if (state.shield) {\n      state.shield = false;\n      state.comets.splice(index, 1);\n    } else {\n      state.over = true;\n      state.reason = 'comet';\n      break;\n    }\n  }\n\n  if (!state.over) {\n    const body = ateStar ? state.snake.slice(1) : state.snake.slice(1, -1);\n    if (body.some(segment => same(segment, head))) {\n      state.over = true;\n      state.reason = 'self';\n    }\n  }\n\n  state.ticks += 1;\n  return state;\n}\n```",
+   "tool_calls": []
+  },
+  {
+   "node": "tester",
+   "messages": [
+    {
+     "role": "system",
+     "content": "You are the Tester at Comet Arcade. The test harness ran the game. File one short bug per failed test : what happens, what the rule says, and where in the code the cause is likely. Do not write the fix."
+    },
+    {
+     "role": "human",
+     "content": "20 of 21 rule tests pass\nbot : 66.0 stars on average, best score 80\nFAIL self-hit (rule 8, the head on the body ends the game) : head landing on body cell (5,6) should end the game with reason self, got over=False reason=None\n\nThe code :\n```javascript\nconst COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right',\n    stars: [],\n    comets: [],\n    extras: [],\n    score: 0,\n    eaten: 0,\n    tickMs: START_MS,\n    ticks: 0,\n    over: false,\n    reason: null,\n    shield: false,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  spawnComet(state);\n  spawnComet(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  if (previous.over) return previous;\n\n  const state = clone(previous);\n\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) {\n    state.dir = input;\n  }\n\n  const vector = VECTORS[state.dir];\n  const oldHead = state.snake[0];\n  const head = {\n    x: wrap(oldHead.x + vector.x, COLS),\n    y: wrap(oldHead.y + vector.y, ROWS),\n  };\n\n  const oldComets = state.comets.map(comet => ({ x: comet.x, y: comet.y }));\n  for (const comet of state.comets) {\n    comet.x = wrap(comet.x + comet.dx, COLS);\n    comet.y = wrap(comet.y + comet.dy, ROWS);\n  }\n\n  state.snake.unshift(head);\n\n  const starIndex = state.stars.findIndex(item => same(item, head));\n  const ateStar = starIndex >= 0;\n  if (ateStar) {\n    state.stars.splice(starIndex, 1);\n    state.score += 1;\n    state.eaten += 1;\n\n    if (state.eaten % 5 === 0) {\n      state.tickMs = Math.max(60, state.tickMs - 20);\n      if (state.comets.length < 6) spawnComet(state);\n    }\n    if (state.eaten % 4 === 0) spawnExtra(state, 'shield');\n\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n\n  const shieldIndex = state.extras.findIndex(extra => extra.kind === 'shield' && same(extra, head));\n  if (shieldIndex >= 0) {\n    state.extras.splice(shieldIndex, 1);\n    state.shield = true;\n  }\n\n  const cometHitIndices = [];\n  for (let i = 0; i < state.comets.length; i++) {\n    const comet = state.comets[i];\n    const swapped = same(oldHead, comet) && same(head, oldComets[i]);\n    if (same(head, comet) || swapped) cometHitIndices.push(i);\n  }\n\n  for (let i = cometHitIndices.length - 1; i >= 0; i--) {\n    const index = cometHitIndices[i];\n    if (state.shield) {\n      state.shield = false;\n      state.comets.splice(index, 1);\n    } else {\n      state.over = true;\n      state.reason = 'comet';\n      break;\n    }\n  }\n\n  if (!state.over) {\n    const body = ateStar ? state.snake.slice(1) : state.snake.slice(1, -1);\n    if (body.some(segment => same(segment, head))) {\n      state.over = true;\n      state.reason = 'self';\n    }\n  }\n\n  state.ticks += 1;\n  return state;\n}\n```"
+    }
+   ],
+   "seconds": 1.73,
+   "input_tokens": 1426,
+   "output_tokens": 95,
+   "cost": 0.000225675,
+   "provider": "openai",
+   "reply": "**Self-collision is not detected when the head lands on the body.** Rule 8 says landing on any body cell ends the game with reason `self`, but the test ends with `over=false` and `reason=null` at cell (5,6). The likely cause is the self-collision check in `step()`: it excludes the last segment with `state.snake.slice(1, -1)` when no star was eaten.",
+   "tool_calls": []
+  },
+  {
+   "node": "coder",
+   "messages": [
+    {
+     "role": "system",
+     "content": "You are the Coder at Comet Arcade. You write the pure game logic of a one-file canvas game. The kit draws the state and reads the keyboard, so you write no DOM code."
+    },
+    {
+     "role": "human",
+     "content": "# Comet Snake : rules\n\nA game is one HTML file. The kit holds the canvas, the drawing, the keyboard and the bot. The `logic` block holds\nevery rule as pure JavaScript. Tests and the bot run that block headless, so it has no DOM, no clock and no\n`Math.random`. Randomness comes from `nextRandom(state)` and the helpers built on it.\n\n## The state\n\n`init(seed)` returns a plain JSON object with these fields. A twist may add the fields it names.\n\n| field | meaning |\n| --- | --- |\n| `snake` | list of `{x, y}`, head first |\n| `dir` | `up`, `down`, `left` or `right` |\n| `stars` | list of `{x, y}`, always one star while the game runs |\n| `comets` | list of `{x, y, dx, dy}` |\n| `extras` | list of `{x, y, kind}`, the objects a twist adds |\n| `score` | points |\n| `eaten` | stars eaten |\n| `tickMs` | milliseconds between ticks, starts at 200 |\n| `ticks` | steps played |\n| `over`, `reason` | `over` is true when the game ended ; `reason` is `comet` or `self`, otherwise `null` |\n| `seed` | the random seed |\n\n`step(state, input)` returns a new state and must not change the state it received. `input` is a direction or `null`.\n\n## The rules\n\n1. Movement : each step the head moves one cell in `dir`, and the tail follows. The length stays the same\n2. Steering : an input sets `dir`. An input opposite to `dir` is ignored\n3. Space wraps : leaving one edge enters at the opposite edge\n4. Stars : when the head lands on a star, the snake grows by one, `score` and `eaten` go up by one, and a new star appears\n5. Comets start : `init` places 2 comets with `spawnComet`\n6. Comets move : every step each comet moves by `(dx, dy)`, wrapping at the edges like the snake\n7. Comet hit : when a comet and the head are on the same cell after both moved, `over` is true and `reason` is `comet`.\n   The same holds when the head and a comet swap cells in one step. A comet that crosses the body does nothing\n8. Self hit : when the head lands on a body cell, `over` is true and `reason` is `self`. The cell the tail leaves in this\n   step is free, so a snake may follow its own tail\n9. Speed : every fifth star (eaten 5, 10, 15 ...) lowers `tickMs` by 20, never below 60\n10. More comets : every fifth star adds one comet with `spawnComet`, up to 6 comets\n11. Game over is final : `step` on a finished game returns the same state, unchanged, and `ticks` stops\n12. `ticks` goes up by one on every step of a running game, also on the step that ends it\n\n\n## The twist : Comet Snake: Second Chance\n\n- init sets a new field shield to false.\n- Every fourth star eaten (eaten 4, 8, 12 ...) also places one extra of kind 'shield' with spawnExtra.\n- When the head lands on a shield extra, shield becomes true and the extra is removed.\n- A comet hit while shield is true does not end the game : shield becomes false and that comet is removed.\n- A second hit ends the game.\n\n## The logic block\n\n```javascript\nconst COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right',\n    stars: [],\n    comets: [],\n    extras: [],\n    score: 0,\n    eaten: 0,\n    tickMs: START_MS,\n    ticks: 0,\n    over: false,\n    reason: null,\n    shield: false,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  spawnComet(state);\n  spawnComet(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  if (previous.over) return previous;\n\n  const state = clone(previous);\n\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) {\n    state.dir = input;\n  }\n\n  const vector = VECTORS[state.dir];\n  const oldHead = state.snake[0];\n  const head = {\n    x: wrap(oldHead.x + vector.x, COLS),\n    y: wrap(oldHead.y + vector.y, ROWS),\n  };\n\n  const oldComets = state.comets.map(comet => ({ x: comet.x, y: comet.y }));\n  for (const comet of state.comets) {\n    comet.x = wrap(comet.x + comet.dx, COLS);\n    comet.y = wrap(comet.y + comet.dy, ROWS);\n  }\n\n  state.snake.unshift(head);\n\n  const starIndex = state.stars.findIndex(item => same(item, head));\n  const ateStar = starIndex >= 0;\n  if (ateStar) {\n    state.stars.splice(starIndex, 1);\n    state.score += 1;\n    state.eaten += 1;\n\n    if (state.eaten % 5 === 0) {\n      state.tickMs = Math.max(60, state.tickMs - 20);\n      if (state.comets.length < 6) spawnComet(state);\n    }\n    if (state.eaten % 4 === 0) spawnExtra(state, 'shield');\n\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n\n  const shieldIndex = state.extras.findIndex(extra => extra.kind === 'shield' && same(extra, head));\n  if (shieldIndex >= 0) {\n    state.extras.splice(shieldIndex, 1);\n    state.shield = true;\n  }\n\n  const cometHitIndices = [];\n  for (let i = 0; i < state.comets.length; i++) {\n    const comet = state.comets[i];\n    const swapped = same(oldHead, comet) && same(head, oldComets[i]);\n    if (same(head, comet) || swapped) cometHitIndices.push(i);\n  }\n\n  for (let i = cometHitIndices.length - 1; i >= 0; i--) {\n    const index = cometHitIndices[i];\n    if (state.shield) {\n      state.shield = false;\n      state.comets.splice(index, 1);\n    } else {\n      state.over = true;\n      state.reason = 'comet';\n      break;\n    }\n  }\n\n  if (!state.over) {\n    const body = ateStar ? state.snake.slice(1) : state.snake.slice(1, -1);\n    if (body.some(segment => same(segment, head))) {\n      state.over = true;\n      state.reason = 'self';\n    }\n  }\n\n  state.ticks += 1;\n  return state;\n}\n```\n\nReturn the complete logic block with every rule and the twist in it, in one javascript code block. Keep every helper. Keep the function names init and step.\n\n## The Tester found these bugs in the block above. Fix them.\n\n**Self-collision is not detected when the head lands on the body.** Rule 8 says landing on any body cell ends the game with reason `self`, but the test ends with `over=false` and `reason=null` at cell (5,6). The likely cause is the self-collision check in `step()`: it excludes the last segment with `state.snake.slice(1, -1)` when no star was eaten."
+    }
+   ],
+   "seconds": 8.94,
+   "input_tokens": 2284,
+   "output_tokens": 1317,
+   "cost": 0.000943925,
+   "provider": "openai",
+   "reply": "```javascript\nconst COLS = 24;\nconst ROWS = 18;\nconst START_MS = 200;\nconst VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };\nconst OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };\n\nfunction clone(value) { return JSON.parse(JSON.stringify(value)); }\nfunction wrap(value, size) { return (value + size) % size; }\nfunction same(a, b) { return a.x === b.x && a.y === b.y; }\n\n// The only source of randomness. The seed lives in the state, so a replay is identical.\nfunction nextRandom(state) {\n  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;\n  return state.seed / 4294967296;\n}\n\nfunction occupied(state, cell) {\n  return [...state.snake, ...state.stars, ...state.comets, ...state.extras].some(item => same(item, cell));\n}\n\n// A random cell that holds nothing and is at least `distance` steps from the head.\nfunction freeCell(state, distance = 0) {\n  const head = state.snake[0];\n  for (let tries = 0; tries < 500; tries++) {\n    const cell = { x: Math.floor(nextRandom(state) * COLS), y: Math.floor(nextRandom(state) * ROWS) };\n    if (!occupied(state, cell) && Math.abs(cell.x - head.x) + Math.abs(cell.y - head.y) >= distance) return cell;\n  }\n  return null;\n}\n\nfunction spawnStar(state) {\n  const cell = freeCell(state);\n  if (cell) state.stars.push(cell);\n}\n\nfunction spawnComet(state) {\n  const cell = freeCell(state, 8);\n  if (!cell) return;\n  const direction = Object.values(VECTORS)[Math.floor(nextRandom(state) * 4)];\n  state.comets.push({ x: cell.x, y: cell.y, dx: direction.x, dy: direction.y });\n}\n\nfunction spawnExtra(state, kind) {\n  const cell = freeCell(state);\n  if (cell) state.extras.push({ x: cell.x, y: cell.y, kind });\n}\n\nfunction init(seed) {\n  const state = {\n    snake: [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }],\n    dir: 'right',\n    stars: [],\n    comets: [],\n    extras: [],\n    score: 0,\n    eaten: 0,\n    tickMs: START_MS,\n    ticks: 0,\n    over: false,\n    reason: null,\n    shield: false,\n    seed: (seed >>> 0) + 1,\n  };\n  spawnStar(state);\n  spawnComet(state);\n  spawnComet(state);\n  return state;\n}\n\n// One tick of the game. Returns a new state and leaves `previous` untouched.\nfunction step(previous, input) {\n  if (previous.over) return previous;\n\n  const state = clone(previous);\n\n  if (input && VECTORS[input] && input !== OPPOSITE[state.dir]) {\n    state.dir = input;\n  }\n\n  const vector = VECTORS[state.dir];\n  const oldHead = state.snake[0];\n  const head = {\n    x: wrap(oldHead.x + vector.x, COLS),\n    y: wrap(oldHead.y + vector.y, ROWS),\n  };\n\n  const oldComets = state.comets.map(comet => ({ x: comet.x, y: comet.y }));\n  for (const comet of state.comets) {\n    comet.x = wrap(comet.x + comet.dx, COLS);\n    comet.y = wrap(comet.y + comet.dy, ROWS);\n  }\n\n  state.snake.unshift(head);\n\n  const starIndex = state.stars.findIndex(item => same(item, head));\n  const ateStar = starIndex >= 0;\n  if (ateStar) {\n    state.stars.splice(starIndex, 1);\n    state.score += 1;\n    state.eaten += 1;\n\n    if (state.eaten % 5 === 0) {\n      state.tickMs = Math.max(60, state.tickMs - 20);\n      if (state.comets.length < 6) spawnComet(state);\n    }\n    if (state.eaten % 4 === 0) spawnExtra(state, 'shield');\n\n    spawnStar(state);\n  } else {\n    state.snake.pop();\n  }\n\n  const shieldIndex = state.extras.findIndex(extra => extra.kind === 'shield' && same(extra, head));\n  if (shieldIndex >= 0) {\n    state.extras.splice(shieldIndex, 1);\n    state.shield = true;\n  }\n\n  const cometHitIndices = [];\n  for (let i = 0; i < state.comets.length; i++) {\n    const comet = state.comets[i];\n    const swapped = same(oldHead, comet) && same(head, oldComets[i]);\n    if (same(head, comet) || swapped) cometHitIndices.push(i);\n  }\n\n  for (let i = cometHitIndices.length - 1; i >= 0; i--) {\n    const index = cometHitIndices[i];\n    if (state.shield) {\n      state.shield = false;\n      state.comets.splice(index, 1);\n    } else {\n      state.over = true;\n      state.reason = 'comet';\n      break;\n    }\n  }\n\n  if (!state.over) {\n    // The tail has already been removed when the snake did not grow, so\n    // every remaining segment after the head is a body cell to check.\n    if (state.snake.slice(1).some(segment => same(segment, head))) {\n      state.over = true;\n      state.reason = 'self';\n    }\n  }\n\n  state.ticks += 1;\n  return state;\n}\n```",
+   "tool_calls": []
+  }
+ ]
+}

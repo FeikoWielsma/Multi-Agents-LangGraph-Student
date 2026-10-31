@@ -11,27 +11,29 @@
 </style></head><body><div class="bespoke-marp-osc"><button data-bespoke-marp-osc="prev" tabindex="-1" title="Previous slide">Previous slide</button><span data-bespoke-marp-osc="page"></span><button data-bespoke-marp-osc="next" tabindex="-1" title="Next slide">Next slide</button><button data-bespoke-marp-osc="fullscreen" tabindex="-1" title="Toggle fullscreen (f)">Toggle fullscreen</button><button data-bespoke-marp-osc="overview" tabindex="-1" title="Toggle overview view (o)">Toggle overview view</button><button data-bespoke-marp-osc="presenter" tabindex="-1" title="Open presenter view (p)">Open presenter view</button></div><div id=":$p"><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="1" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="1" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10"><div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="why-langgraph">Why LangGraph?</h1>
 <ul>
-<li>Chains suit sequential flow : <code>prompt -&gt; model -&gt; parser -&gt; result</code></li>
-<li>A work order needs more control than a chain :
+<li>In the agent loop of module 00 the model picks every next step</li>
+<li>A game build needs some of those steps fixed :
 <ul>
-<li>An urgent order goes to an engineer, a routine one to the queue</li>
-<li>A failed diagnosis runs again</li>
-<li>Depot reports run in parallel ; a part order waits for approval</li>
+<li>After the Designer finishes, the Coder starts</li>
+<li>When tests fail, the build goes back to the Coder</li>
+<li>When tests pass, the game ships</li>
 </ul>
 </li>
-<li>LangGraph models a workflow as nodes over shared state :
+<li>LangGraph writes those steps as code :
 <ul>
-<li>Edges express branching and loops</li>
-<li>State is explicit and typed</li>
+<li>Each step is a function, called a node</li>
+<li>A project board passes from node to node and holds the work so far</li>
 </ul>
 </li>
-<li>LangChain agents and Deep Agents use the LangGraph runtime</li>
-<li>The application code owns the shape of the workflow</li>
+<li><code>create_agent</code> from module 01 builds such a graph, and so do Deep Agents</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="2" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="2" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="langchain-vs-langgraph">LangChain vs. LangGraph</h1>
+<ul>
+<li>LCEL is LangChain's pipe syntax : <code>prompt | model | parser</code>, one straight line</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -65,46 +67,68 @@
 </table>
 <ul>
 <li><code>create_agent</code> returns a compiled LangGraph graph</li>
-<li>A graph of its own suits logic specific to the application, such as a work order's lifecycle</li>
+<li>A graph of its own suits logic specific to the application, such as a fix loop</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="3" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="3" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="thinking-in-langgraph">Thinking in LangGraph</h1>
 <ul>
-<li>A design starts from the process :
-<ul>
-<li>A work order is diagnosed, waits for parts, then is repaired</li>
-<li>Diagnosis needs judgment ; the parts lookup does not</li>
+<li>Designing a graph starts from the process, with one question for each part :</li>
 </ul>
-</li>
-<li>Each step becomes a node ; a model call for judgment, a plain function for fixed work</li>
-<li>State holds every value a step reads, writes or needs after a pause</li>
-<li>Edges connect the nodes :
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Question</th>
+<th>Comet Snake</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>What are the steps?</td>
+<td>Designer, Coder, Tester</td>
+</tr>
+<tr>
+<td>State</td>
+<td>What must every step see?</td>
+<td>The project board : brief, rules, code, bugs</td>
+</tr>
+<tr>
+<td>Edge</td>
+<td>What runs after what?</td>
+<td>After the Designer, the Coder</td>
+</tr>
+<tr>
+<td>Conditional edge</td>
+<td>What gets decided on the way?</td>
+<td>Tests fail : back to the Coder</td>
+</tr>
+<tr>
+<td>Control point</td>
+<td>Where does a mistake cost most?</td>
+<td>The Publisher approves a release</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li>Fixed edges for known order, such as parts before repair</li>
-<li>Conditional edges for decisions, such as a second diagnosis</li>
-</ul>
-</li>
-<li>Control points go where a mistake costs most, such as a part order</li>
-<li>The graph drawing documents the design</li>
+<li>A step that needs judgment calls a model, such as writing the game logic</li>
+<li>A step with a fixed answer is a plain function, such as running the tests</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="4" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="4" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="directed-graphs">Directed Graphs</h1>
 <ul>
-<li>A directed graph contains vertices and directed edges :
+<li>A directed graph is a set of steps joined by one-way arrows :
 <ul>
-<li>Vertices are steps, such as <code>diagnose</code>, <code>parts</code> and <code>repair</code></li>
-<li>Edges are allowed transitions, such as <code>diagnose</code> to <code>parts</code></li>
+<li>A step is a node, such as <code>designer</code> or <code>coder</code></li>
+<li>An arrow is an edge : after <code>designer</code> comes <code>coder</code></li>
 </ul>
 </li>
-<li>A path follows the direction of each edge</li>
-<li>Fan-out sends execution to several branches, such as one per depot</li>
-<li>Fan-in joins the branch results at a later step</li>
-<li>A directed acyclic graph has no path back to an earlier vertex</li>
-<li>A cyclic graph contains at least one loop</li>
+<li>A run enters at <code>START</code>, goes <code>designer</code>, <code>coder</code>, <code>tester</code>, and stops at <code>END</code></li>
+<li>An arrow back to an earlier node makes a loop, called a cycle : from <code>tester</code> back to <code>coder</code></li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo01</code><br><code class="pill-demo pill-desc">graphs-and-state-machines</code></p>
@@ -114,187 +138,239 @@
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="dags-and-cycles">DAGs and Cycles</h1>
 <ul>
-<li>A DAG contains no directed cycle</li>
-<li>A cyclic graph allows a path to return to an earlier node</li>
-<li>A work order that goes from open to diagnosed to waiting for parts to closed is a DAG</li>
-<li>An edge from <code>parts</code> back to <code>diagnose</code> for a retry adds a cycle</li>
-<li>LangGraph accepts both ; a recursion limit bounds every cycle</li>
+<li>A path is one route through a graph, such as <code>designer</code>, <code>coder</code>, <code>tester</code></li>
+<li>DAG stands for directed acyclic graph : no path leads back to an earlier node</li>
+<li>A graph with only that path is a DAG</li>
+<li>An edge from <code>tester</code> back to <code>coder</code> adds a cycle</li>
+<li>Graph theory calls a node a vertex, and LangGraph uses node</li>
+<li>LangGraph accepts both shapes, and a recursion limit stops a cycle that never ends</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="6" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="6" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
-<h1 id="fan-out-and-fan-in">Fan-out and Fan-in</h1>
+<h1 id="state-machines">State Machines</h1>
 <ul>
-<li>Fan-out starts several branches from one step, such as a report per depot</li>
-<li>Uneven branches need <code>add_edge([a, b], c)</code> or <code>defer=True</code> for the join to wait for all of them</li>
-<li>With plain edges, a branch that finishes early triggers the join early</li>
-<li>Branches that write one key need a reducer, such as <code>operator.add</code> on a list of reports</li>
-<li><code>Send</code> creates branches whose number is known only at runtime, such as one per depot in the input</li>
+<li>A state machine describes a process as states and transitions :
+<ul>
+<li>A state records where the build stands, such as <code>tests fail</code></li>
+<li>A transition moves the build on and selects the next step</li>
+</ul>
+</li>
+<li>A plain node applies a fixed transition, such as <code>tests pass</code> to <code>shipped</code></li>
+<li>A model can choose a transition when the next step needs judgment</li>
+<li>Demo01 b prints one build as it moves through its states :
+<ul>
+<li><code>build 1</code>, <code>tests fail</code>, <code>build 2</code>, <code>tests pass</code>, <code>shipped</code>, after 2 attempts</li>
+<li>A build that never passes stops at 3 attempts, with <code>tests fail</code></li>
+</ul>
+</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="7" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="7" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
-<h1 id="state-machines">State Machines</h1>
-<ul>
-<li>A state machine represents a process as states and transitions :
-<ul>
-<li>State records where the work order is, such as open or waiting for parts</li>
-<li>A transition changes state and selects the next step</li>
-</ul>
-</li>
-<li>A plain node applies a fixed transition, such as open to diagnosed</li>
-<li>A model can choose a transition when the next step needs judgment</li>
-<li>A cycle lets the work order return to diagnosis :
-<ul>
-<li>The first diagnosis fails and the back edge runs once</li>
-<li>The router exits once <code>attempts</code> reaches 2 : <code>open</code>, <code>diagnosis failed</code>, <code>diagnosed</code>, <code>waiting for parts</code></li>
-</ul>
-</li>
-<li>The cap lives in state ; the recursion limit is only a last resort</li>
-</ul>
-<blockquote>
-<p><code class="pill-demo pill-id">demo01b</code><br><code class="pill-demo pill-desc">work-order-lifecycle</code></p>
-</blockquote>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="8" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="8" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
-<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="model-transitions">Model Transitions</h1>
 <ul>
-<li>A deterministic node applies a fixed transition to state</li>
-<li>A model node supplies the judgment, such as whether a work order is electrical or mechanical</li>
-<li>A routing function maps that label to a node, such as the electrical bay</li>
+<li>A plain node changes the board the same way on every run</li>
+<li>A model node supplies a judgment, such as whether a brief is an arcade game or a puzzle</li>
+<li>A routing function maps that label to a node, such as <code>puzzle</code></li>
 <li>The other steps stay plain functions</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="9" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="9" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="8" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="8" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="langgraph-concepts">LangGraph Concepts</h1>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+<th>Comet Arcade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>State</td>
+<td>The data of one run, in named fields called keys</td>
+<td>The project board</td>
+</tr>
+<tr>
+<td>Node</td>
+<td>A function that reads the state and returns updates</td>
+<td><code>coder</code> writes <code>code</code></td>
+</tr>
+<tr>
+<td>Edge</td>
+<td>An arrow : which node starts when this one finishes</td>
+<td>After <code>designer</code>, <code>coder</code></td>
+</tr>
+<tr>
+<td>Conditional edge</td>
+<td>A function that reads the board and picks the next node</td>
+<td>Tests fail : <code>coder</code></td>
+</tr>
+<tr>
+<td><code>START</code>, <code>END</code></td>
+<td>Where a run enters and where it stops</td>
+<td><code>START</code> to <code>designer</code></td>
+</tr>
+<tr>
+<td>Builder</td>
+<td>The graph while it is being defined ; <code>compile</code> makes it runnable</td>
+<td><code>builder = StateGraph(Board)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="9" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="9" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
+<h1 id="node-functions">Node Functions</h1>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> coder</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">board</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Board) </span><span style="color:#212121">-></span><span style="color:#1976D2"> dict</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"code"</span><span style="color:#212121">:</span><span style="color:#22863A"> "game.html"</span><span style="color:#212121">}</span></span>
+<span class="line"></span></code></pre>
 <ul>
-<li>A graph is a workflow over state</li>
-<li>State is a schema that nodes read and update</li>
-<li>A node is a function that receives state and returns updates</li>
-<li>An edge connects a node to a possible next node</li>
-<li>A conditional edge selects a target from the current state</li>
-<li><code>START</code> and <code>END</code> mark graph entry and exit</li>
-<li>A builder is compiled before it is invoked</li>
+<li>A node receives the current state as its input</li>
+<li>A node returns only the keys it changed ; LangGraph writes them onto the board</li>
+<li>The keys it leaves out stay as they were</li>
+<li>One graph can be a node inside another graph</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="10" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="10" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
-<h1 id="node-functions">Node Functions</h1>
-<ul>
-<li>A node receives the current state as its input</li>
-<li>A node returns only the keys it changed, such as <code>{&quot;status&quot;: &quot;diagnosed&quot;}</code></li>
-<li>A node may be a Python function, a runnable, or a compiled graph</li>
-<li>A node can return <code>Command</code> to update state and route execution</li>
-</ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="11" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="11" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
-<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="stategraph-nodes-and-edges">StateGraph Nodes and Edges</h1>
 <ul>
-<li><code>StateGraph</code> builds a graph around a state schema :
+<li><code>StateGraph</code> builds a graph around a state schema, the list of keys on the board :
 <ul>
-<li><code>add_node</code> registers a function or compiled graph</li>
-<li><code>add_edge</code> adds a fixed transition</li>
-<li><code>add_conditional_edges</code> adds a routed transition</li>
+<li><code>add_node</code> adds a step : a function or a whole graph</li>
+<li><code>add_edge</code> adds an arrow : after <code>designer</code>, always <code>coder</code></li>
+<li><code>add_conditional_edges</code> adds a decision : a function picks the next node</li>
 </ul>
 </li>
-<li>A node returns a partial state update</li>
-<li>A compiled graph exposes <code>invoke</code> and <code>stream</code></li>
+<li><code>compile</code> checks the definition and returns a graph that can run</li>
+<li>A compiled graph exposes <code>invoke</code> and <code>stream</code> :
+<ul>
+<li><code>invoke</code> takes the first board and returns the last one</li>
+<li><code>stream</code> returns results while the run goes on</li>
+</ul>
+</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo02</code><br><code class="pill-demo pill-desc">nodes-and-edges</code></p>
 </blockquote>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="12" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="12" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="11" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="11" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="hello-langgraph">Hello LangGraph</h1>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> typing </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> TypedDict</span></span>
 <span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> langgraph</span><span style="color:#212121">.</span><span style="color:#24292EFF">graph </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> END</span><span style="color:#212121">,</span><span style="color:#24292EFF"> START</span><span style="color:#212121">,</span><span style="color:#24292EFF"> StateGraph</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#D32F2F">class</span><span style="color:#6F42C1"> Number</span><span style="color:#24292EFF">(</span><span style="color:#6F42C1">TypedDict</span><span style="color:#24292EFF">):</span></span>
-<span class="line"><span style="color:#24292EFF">    value</span><span style="color:#212121">:</span><span style="color:#1976D2"> int</span></span>
+<span class="line"><span style="color:#D32F2F">class</span><span style="color:#6F42C1"> Board</span><span style="color:#24292EFF">(</span><span style="color:#6F42C1">TypedDict</span><span style="color:#24292EFF">):</span></span>
+<span class="line"><span style="color:#24292EFF">    brief</span><span style="color:#212121">:</span><span style="color:#1976D2"> str</span></span>
+<span class="line"><span style="color:#24292EFF">    rules</span><span style="color:#212121">:</span><span style="color:#1976D2"> str</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#24292EFF">builder </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> StateGraph</span><span style="color:#212121">(Number)</span></span>
-<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_node</span><span style="color:#212121">(</span><span style="color:#22863A">"double"</span><span style="color:#212121">, </span><span style="color:#D32F2F">lambda</span><span style="color:#FF9800"> s</span><span style="color:#212121">: {</span><span style="color:#22863A">"value"</span><span style="color:#212121">: s[</span><span style="color:#22863A">"value"</span><span style="color:#212121">] </span><span style="color:#D32F2F">*</span><span style="color:#1976D2"> 2</span><span style="color:#212121">})</span></span>
-<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">(START, </span><span style="color:#22863A">"double"</span><span style="color:#212121">)</span></span>
-<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">(</span><span style="color:#22863A">"double"</span><span style="color:#212121">, END)</span></span>
+<span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> designer</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">board</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Board) </span><span style="color:#212121">-></span><span style="color:#1976D2"> dict</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"rules"</span><span style="color:#212121">:</span><span style="color:#D32F2F"> f</span><span style="color:#22863A">"rules for </span><span style="color:#1976D2">{</span><span style="color:#24292EFF">board</span><span style="color:#212121">[</span><span style="color:#22863A">'brief'</span><span style="color:#212121">]</span><span style="color:#1976D2">}</span><span style="color:#22863A">"</span><span style="color:#212121">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292EFF">builder </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> StateGraph</span><span style="color:#212121">(Board)</span></span>
+<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_node</span><span style="color:#212121">(</span><span style="color:#22863A">"designer"</span><span style="color:#212121">, designer)</span></span>
+<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">(START, </span><span style="color:#22863A">"designer"</span><span style="color:#212121">)</span></span>
+<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">(</span><span style="color:#22863A">"designer"</span><span style="color:#212121">, END)</span></span>
 <span class="line"><span style="color:#24292EFF">graph </span><span style="color:#D32F2F">=</span><span style="color:#24292EFF"> builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">compile</span><span style="color:#212121">()</span></span>
-<span class="line"><span style="color:#6F42C1">print</span><span style="color:#212121">(graph.</span><span style="color:#6F42C1">invoke</span><span style="color:#212121">({</span><span style="color:#22863A">"value"</span><span style="color:#212121">: </span><span style="color:#1976D2">5</span><span style="color:#212121">}))</span><span style="color:#4a9c59">   # {'value': 10}</span></span>
+<span class="line"><span style="color:#6F42C1">print</span><span style="color:#212121">(graph.</span><span style="color:#6F42C1">invoke</span><span style="color:#212121">({</span><span style="color:#22863A">"brief"</span><span style="color:#212121">: </span><span style="color:#22863A">"snake in space"</span><span style="color:#212121">, </span><span style="color:#22863A">"rules"</span><span style="color:#212121">: </span><span style="color:#22863A">""</span><span style="color:#212121">}))</span></span>
 <span class="line"></span></code></pre>
+<ul>
+<li><code>Board</code> lists the keys of the state, and <code>invoke</code> runs the graph once</li>
+</ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="13" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="13" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="12" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="12" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="start-and-end">START and END</h1>
 <ul>
-<li><code>START</code> identifies the graph entry point</li>
-<li><code>END</code> marks a completed path</li>
-<li><code>add_edge(START, &quot;node&quot;)</code> defines the entry edge</li>
-<li><code>add_edge(&quot;node&quot;, END)</code> defines a terminal edge</li>
+<li><code>START</code> and <code>END</code> are two fixed names from <code>langgraph.graph</code></li>
+<li><code>add_edge(START, &quot;designer&quot;)</code> makes the Designer the first node of every run</li>
+<li><code>add_edge(&quot;tester&quot;, END)</code> stops the run after the Tester</li>
+<li>A graph with no edge from <code>START</code> fails at <code>compile</code> : <code>Graph must have an entrypoint</code></li>
 <li><code>set_entry_point</code> and <code>set_finish_point</code> are older equivalents ; the docs use <code>add_edge</code></li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo02b</code><br><code class="pill-demo pill-desc">start-end-entry</code></p>
 </blockquote>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="14" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="14" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="13" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="13" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="conditional-edges">Conditional Edges</h1>
 <ul>
-<li>A conditional edge calls a routing function at runtime :
-<ul>
-<li>The function reads state and returns a route label</li>
-<li><code>route</code> returns <code>&quot;page&quot;</code> for an urgent work order and <code>&quot;queue&quot;</code> otherwise</li>
+<li>A routing function reads the board and returns the name of the next node :</li>
 </ul>
-</li>
-<li>Route labels can match node names directly</li>
-<li>A <code>Literal</code> return type documents the possible routes</li>
-<li>A route can select a branch or send execution around a cycle</li>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> route</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">board</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Board) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"ship"</span><span style="color:#212121">,</span><span style="color:#22863A"> "coder"</span><span style="color:#212121">]</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#22863A"> "coder"</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> board</span><span style="color:#212121">[</span><span style="color:#22863A">"bugs"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> else</span><span style="color:#22863A"> "ship"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_conditional_edges</span><span style="color:#212121">(</span><span style="color:#22863A">"tester"</span><span style="color:#212121">, route)</span></span>
+<span class="line"></span></code></pre>
+<ul>
+<li>LangGraph calls <code>route</code> when <code>tester</code> has finished</li>
+<li>The returned text is the name of a node, as <code>&quot;ship&quot;</code> is here</li>
+<li><code>Literal</code> in the return type lists the allowed values, so the graph drawing can show each route</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo03</code><br><code class="pill-demo pill-desc">routing</code></p>
 </blockquote>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="15" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="15" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="14" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="14" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="routing-with-path_map">Routing with path_map</h1>
 <ul>
 <li><code>path_map</code> maps route labels to graph node names :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_conditional_edges</span><span style="color:#212121">(</span></span>
-<span class="line"><span style="color:#22863A">    "route"</span><span style="color:#212121">,</span></span>
-<span class="line"><span style="color:#D32F2F">    lambda</span><span style="color:#FF9800"> s</span><span style="color:#212121">: s[</span><span style="color:#22863A">"priority"</span><span style="color:#212121">],</span></span>
-<span class="line"><span style="color:#212121">    {</span><span style="color:#22863A">"urgent"</span><span style="color:#212121">: </span><span style="color:#22863A">"page"</span><span style="color:#212121">, </span><span style="color:#22863A">"routine"</span><span style="color:#212121">: </span><span style="color:#22863A">"queue"</span><span style="color:#212121">},</span></span>
+<span class="line"><span style="color:#22863A">    "tester"</span><span style="color:#212121">,</span></span>
+<span class="line"><span style="color:#D32F2F">    lambda</span><span style="color:#FF9800"> board</span><span style="color:#212121">: board[</span><span style="color:#22863A">"tests"</span><span style="color:#212121">],</span></span>
+<span class="line"><span style="color:#212121">    {</span><span style="color:#22863A">"pass"</span><span style="color:#212121">: </span><span style="color:#22863A">"ship"</span><span style="color:#212121">, </span><span style="color:#22863A">"fail"</span><span style="color:#212121">: </span><span style="color:#22863A">"coder"</span><span style="color:#212121">},</span></span>
 <span class="line"><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
 <li>A dictionary maps labels to destinations</li>
 <li>A list declares possible destinations when labels match node names</li>
-<li>A label missing from the map raises <code>KeyError</code>, such as <code>&quot;normal&quot;</code></li>
+<li>A label missing from the map, such as <code>&quot;flaky&quot;</code>, raises <code>KeyError</code></li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo03b</code><br><code class="pill-demo pill-desc">path-map</code></p>
 </blockquote>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="16" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="16" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="15" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="15" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="loops-and-cycles">Loops and Cycles</h1>
 <ul>
-<li>A cycle returns execution to an earlier node :
-<ul>
-<li>A router decides whether to continue or exit</li>
+<li>A cycle sends the build back to an earlier node : tests fail, back to the Coder</li>
+<li>The router decides whether to go round again, and it reads a cap from the board :</li>
 </ul>
-</li>
-<li>Loops support retries and iterative refinement</li>
-<li>Every invocation has a recursion limit measured in graph steps :
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> route</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">board</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Build) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"ship"</span><span style="color:#212121">,</span><span style="color:#22863A"> "coder"</span><span style="color:#212121">,</span><span style="color:#22863A"> "__end__"</span><span style="color:#212121">]</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> board</span><span style="color:#212121">[</span><span style="color:#22863A">"status"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "tests pass"</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#22863A"> "ship"</span></span>
+<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> board</span><span style="color:#212121">[</span><span style="color:#22863A">"attempts"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> >=</span><span style="color:#1976D2"> 3</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#24292EFF"> END</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#22863A"> "coder"</span></span>
+<span class="line"></span></code></pre>
+<ul>
+<li>Returning <code>END</code>, the text <code>&quot;__end__&quot;</code>, leaves the graph, so a build at the cap never ships</li>
+</ul>
+<blockquote>
+<p><code class="pill-demo pill-id">demo01b</code><br><code class="pill-demo pill-desc">fix-loop</code></p>
+</blockquote>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="16" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="16" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
+<h1 id="graphrecursionerror">GraphRecursionError</h1>
+<ul>
+<li>LangGraph counts the steps of every run and stops at a limit :
 <ul>
 <li>The default is 10,007 steps on LangGraph 1.2.17</li>
-<li><code>create_agent</code> and <code>create_deep_agent</code> bind 9,999</li>
+<li><code>create_agent</code> and <code>create_deep_agent</code> set 9,999</li>
 </ul>
 </li>
-<li>Exceeding the limit raises <code>GraphRecursionError</code></li>
-<li>Set <code>recursion_limit</code> per run ; a loop that calls a model needs its own cap</li>
+<li>Passing the limit stops the run with a <code>GraphRecursionError</code></li>
+<li>A node with an edge back to itself runs until that error</li>
+<li><code>recursion_limit</code> sets the limit for one run : <code>invoke(board, {&quot;recursion_limit&quot;: 40})</code></li>
+<li>A loop around a model needs a cap of its own, or the limit arrives after thousands of model calls</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo03c</code><br><code class="pill-demo pill-desc">recursion-limit</code></p>
@@ -302,51 +378,57 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="17" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="17" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
-<h1 id="graphrecursionerror">GraphRecursionError</h1>
-<ul>
-<li>The recursion limit bounds graph steps in one invocation</li>
-<li>A node with an edge back to itself raises <code>GraphRecursionError</code> at the limit</li>
-<li>A higher limit permits more steps before the runtime stops the graph</li>
-<li>Every cycle needs a routing condition that exits, such as a cap on attempts</li>
-</ul>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="18" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="18" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
-<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="command">Command</h1>
 <ul>
-<li><code>Command</code> combines a state update with a routing decision :</li>
+<li>A node can return a <code>Command</code> to write to the state and pick the next node in one step :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> typing </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> Literal</span></span>
 <span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> langgraph</span><span style="color:#212121">.</span><span style="color:#24292EFF">types </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> Command</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> triage</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Visit) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Command</span><span style="color:#212121">[</span><span style="color:#24292EFF">Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"urgent"</span><span style="color:#212121">,</span><span style="color:#22863A"> "routine"</span><span style="color:#212121">]]</span><span style="color:#24292EFF">:</span></span>
-<span class="line"><span style="color:#24292EFF">    target </span><span style="color:#D32F2F">=</span><span style="color:#22863A"> "urgent"</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"priority"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "urgent"</span><span style="color:#D32F2F"> else</span><span style="color:#22863A"> "routine"</span></span>
+<span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> triage</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Bug) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Command</span><span style="color:#212121">[</span><span style="color:#24292EFF">Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"coder"</span><span style="color:#212121">,</span><span style="color:#22863A"> "artist"</span><span style="color:#212121">]]</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#24292EFF">    target </span><span style="color:#D32F2F">=</span><span style="color:#22863A"> "artist"</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"kind"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "sprite"</span><span style="color:#D32F2F"> else</span><span style="color:#22863A"> "coder"</span></span>
 <span class="line"><span style="color:#D32F2F">    return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"assigned"</span><span style="color:#212121">: target}, goto</span><span style="color:#D32F2F">=</span><span style="color:#212121">target)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>update</code> changes state from inside a node ; <code>goto</code> selects the next nodes</li>
+<li><code>update</code> holds the keys to write ; <code>goto</code> names the next node</li>
 <li>A node returning <code>Command</code> needs no conditional edge</li>
-<li>The <code>Command[Literal[...]]</code> return type draws its edges ; without it the drawing shows only an edge to <code>END</code></li>
+<li>The <code>Command[Literal[...]]</code> return type adds its edges to the drawing</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo04</code><br><code class="pill-demo pill-desc">command-and-send</code></p>
 </blockquote>
 </section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="18" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="18" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
+<div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
+<h1 id="fan-out-and-fan-in">Fan-out and Fan-in</h1>
+<ul>
+<li>Fan-out : one node starts several nodes at the same time</li>
+<li>Fan-in : those nodes meet at one node, called the join</li>
+<li>The join below waits for both Testers :</li>
+</ul>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">([</span><span style="color:#22863A">"rule_tester"</span><span style="color:#212121">, </span><span style="color:#22863A">"bot_tester"</span><span style="color:#212121">], </span><span style="color:#22863A">"gate"</span><span style="color:#212121">)</span></span>
+<span class="line"></span></code></pre>
+<ul>
+<li>Two nodes that write one key need a reducer, a function that combines the writes :</li>
+</ul>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">bugs</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Annotated</span><span style="color:#212121">[</span><span style="color:#1976D2">list</span><span style="color:#212121">,</span><span style="color:#24292EFF"> operator</span><span style="color:#212121">.</span><span style="color:#24292EFF">add</span><span style="color:#212121">]</span></span>
+<span class="line"></span></code></pre>
+</section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="19" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="19" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="parallel-branches-and-send">Parallel Branches and Send</h1>
 <ul>
-<li>Nodes with a shared predecessor can run in parallel</li>
-<li><code>Send</code> creates runtime branches with individual inputs :</li>
+<li><code>Send</code> creates branches at run time, each with its own input :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> langgraph</span><span style="color:#212121">.</span><span style="color:#24292EFF">types </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> Send</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> fan_out</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#24292EFF">):</span></span>
-<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#24292EFF"> [</span><span style="color:#6F42C1">Send</span><span style="color:#212121">(</span><span style="color:#22863A">"report"</span><span style="color:#212121">, {</span><span style="color:#22863A">"name"</span><span style="color:#212121">: name})</span><span style="color:#D32F2F"> for</span><span style="color:#24292EFF"> name </span><span style="color:#D32F2F">in</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"depots"</span><span style="color:#212121">]</span><span style="color:#24292EFF">]</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#24292EFF"> [</span><span style="color:#6F42C1">Send</span><span style="color:#212121">(</span><span style="color:#22863A">"tester"</span><span style="color:#212121">, {</span><span style="color:#22863A">"level"</span><span style="color:#212121">: level})</span><span style="color:#D32F2F"> for</span><span style="color:#24292EFF"> level </span><span style="color:#D32F2F">in</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"levels"</span><span style="color:#212121">]</span><span style="color:#24292EFF">]</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>A <code>collect</code> node summarises the reports as <code>3 depots checked</code></li>
-<li>Map-reduce combines fan-out work with a reduction step</li>
+<li>A level here is one seed, a start number : <code>init(seed)</code> lays out a different game per seed</li>
+<li>A <code>collect</code> node sums up the reports as <code>3 levels tested</code></li>
+<li>Map-reduce : many runs of one node, then one step that combines the results</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo04b</code><br><code class="pill-demo pill-desc">send-map-reduce</code></p>
@@ -358,13 +440,13 @@
 <ul>
 <li>A deferred node waits until the other scheduled work is complete</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_node</span><span style="color:#212121">(</span><span style="color:#22863A">"collect"</span><span style="color:#212121">, collect, defer</span><span style="color:#D32F2F">=</span><span style="color:#1976D2">True</span><span style="color:#212121">)</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_node</span><span style="color:#212121">(</span><span style="color:#22863A">"splice"</span><span style="color:#212121">, splice, defer</span><span style="color:#D32F2F">=</span><span style="color:#1976D2">True</span><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>Branches <code>short</code> and <code>long1 → long2</code> both lead to <code>collect</code> :
+<li>One branch runs <code>artist</code>, the other <code>coder</code> then <code>reviewer</code> ; both lead to <code>splice</code> :
 <ul>
-<li>Plain : <code>collect</code> runs twice, first seeing 2 entries, then 4</li>
-<li>Deferred : <code>collect</code> runs once, after <code>long2</code>, and sees 3</li>
+<li>Plain : <code>splice</code> runs twice, first seeing 2 entries, then 4</li>
+<li>Deferred : <code>splice</code> runs once, after <code>reviewer</code>, and sees 3</li>
 </ul>
 </li>
 <li>Without <code>defer</code>, a node behind uneven branches runs once per arriving branch</li>
@@ -377,23 +459,25 @@
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="compiling-a-graph">Compiling a Graph</h1>
 <ul>
-<li><code>compile</code> checks the builder's structure and returns a runnable graph</li>
-<li>A checkpointer is attached at compile time</li>
-<li>Runtime options such as <code>recursion_limit</code> go into each invocation</li>
-<li>A builder is compiled once ; the graph is invoked many times</li>
+<li><code>compile</code> checks the builder and returns a graph that can run</li>
+<li><code>compile</code> rejects an edge to a missing node : <code>Found edge ending at unknown node</code></li>
+<li>A checkpointer is attached at compile time ; it saves the board after every step</li>
+<li>Options for one run, such as <code>recursion_limit</code>, go into each <code>invoke</code></li>
+<li>One compiled graph runs many times : demo04 b ran one graph on 3 levels, then on 5</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="22" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="22" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="26" data-size="16:10">
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="visualising-a-graph">Visualising a Graph</h1>
 <ul>
-<li>A compiled graph returns a Mermaid description :</li>
+<li>A compiled graph returns a Mermaid description, a text format for diagrams :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#6F42C1">print</span><span style="color:#212121">(graph.</span><span style="color:#6F42C1">get_graph</span><span style="color:#212121">().</span><span style="color:#6F42C1">draw_mermaid</span><span style="color:#212121">())</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>Mermaid text can be displayed in Markdown or a compatible viewer</li>
-<li>Mermaid text rendering requires no network service</li>
+<li>A Markdown viewer that knows Mermaid draws the text as a diagram</li>
+<li>The text comes from the graph itself, so the drawing matches the code</li>
+<li>No network service is needed</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo05</code><br><code class="pill-demo pill-desc">compiling-and-apis</code></p>
@@ -428,7 +512,7 @@
 <ul>
 <li>Graph API :
 <ul>
-<li>Explicit nodes and edges are drawable and inspectable</li>
+<li>Explicit nodes and edges can be drawn and inspected</li>
 <li>Branches and loops appear directly in the graph definition</li>
 </ul>
 </li>
@@ -448,12 +532,12 @@
 <ul>
 <li>A model call is one node among plain functions :
 <ul>
-<li><code>classify</code> asks the model whether a work order is electrical or mechanical</li>
-<li>A routing function sends it to the electrical or the mechanical bay</li>
+<li><code>classify</code> asks the model whether a brief is an arcade game or a puzzle</li>
+<li>A routing function sends the brief to the <code>arcade</code> or the <code>puzzle</code> node</li>
 </ul>
 </li>
-<li>Model output can vary between runs</li>
-<li>The graph fixes every step around that one judgment</li>
+<li>The model's reply can vary between runs</li>
+<li>Every other step runs the same way each time</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo06</code><br><code class="pill-demo pill-desc">a-model-in-a-node</code></p>
@@ -463,14 +547,13 @@
 <div class="ml-eyebrow"><a>Graph Fundamentals</a></div>
 <h1 id="summary--graph-fundamentals">Summary : Graph Fundamentals</h1>
 <ul>
-<li>Directed graphs describe steps and allowed transitions</li>
-<li>State machines combine state with transitions</li>
-<li><code>StateGraph</code> connects nodes with fixed and conditional edges</li>
-<li><code>START</code>, <code>END</code>, <code>Command</code>, and <code>Send</code> express graph control flow</li>
-<li>Cycles run under a configurable recursion limit</li>
-<li>Deferred nodes wait for scheduled work to finish</li>
-<li>Compilation prepares a runnable graph that can be visualised</li>
-<li>Graph API and Functional API share the LangGraph runtime</li>
+<li>A directed graph is nodes joined by one-way edges, from <code>START</code> to <code>END</code></li>
+<li>The project board is the state : each node returns the keys it changed</li>
+<li><code>StateGraph</code> builds the graph : a fixed edge always leads to one node, a conditional edge lets a function choose</li>
+<li>A fix loop is a cycle, and a cap on the board ends it</li>
+<li>Nodes whose turn has come run together in one round, a superstep, and a join waits for all of them</li>
+<li><code>Send</code> creates branches at run time from what is on the board</li>
+<li><code>compile</code> checks the builder and returns a graph that can run and draw itself</li>
 </ul>
 <blockquote>
 <p><code class="pill-exercise pill-id">exercise01</code><br><code class="pill-exercise pill-desc">Graphs and Loops</code></p>

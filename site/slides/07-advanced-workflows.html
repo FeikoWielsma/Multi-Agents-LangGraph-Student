@@ -13,24 +13,24 @@
 <ul>
 <li>A workflow can pause for a human decision :
 <ul>
-<li>Before a part reservation or a log overwrite at the Veenhaven depot</li>
-<li>Inside a subgraph or a subagent tool</li>
+<li>The Publisher approves a release before it goes out</li>
+<li>The pause also works inside a subgraph or a subagent tool</li>
 </ul>
 </li>
 <li>A workflow can bound its own loops :
 <ul>
-<li>A watchdog node stops a diagnosis that makes no progress</li>
+<li>A watchdog node stops a fix loop that makes no progress</li>
 <li>A guard blocks a repeated tool call</li>
 </ul>
 </li>
 <li>A workflow can recover from failure :
 <ul>
-<li>Retries with backoff around a remote stock lookup</li>
-<li>A fallback chain from live data to a snapshot to a manual queue</li>
+<li>Retries with backoff around a call to a remote asset store</li>
+<li>A fallback chain from live data to a cached copy to a person</li>
 <li>Resume from a checkpoint after a crash or a drain</li>
 </ul>
 </li>
-<li>Subgraphs compose workflows owned by different teams</li>
+<li>Each team can own one subgraph of a larger workflow</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="2" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="2" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="24" data-size="16:10">
@@ -39,18 +39,18 @@
 <ul>
 <li>An agent loop can act on a wrong conclusion :
 <ul>
-<li>Order traction cooling fans that bus BW-7001 does not need</li>
-<li>Overwrite a verified maintenance log without depot sign-off</li>
+<li>Publish a build that plays badly</li>
+<li>Replace the released game without sign-off</li>
 </ul>
 </li>
 <li>A human-in-the-loop workflow pauses before such an action :
 <ul>
-<li>A reviewer sees the proposed action or the draft</li>
-<li>The paused state sits in the checkpointer, with no time limit</li>
+<li>The Publisher, a person, sees the proposed release</li>
+<li>The checkpointer stores the paused state with no time limit</li>
 <li>An in-memory saver loses the pause when the process restarts</li>
 </ul>
 </li>
-<li>The graph continues only when the reviewer supplies a decision</li>
+<li>The graph continues only when the Publisher supplies a decision</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="3" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="3" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="24" data-size="16:10">
@@ -61,9 +61,9 @@
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> langgraph</span><span style="color:#212121">.</span><span style="color:#24292EFF">types </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> interrupt</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> review</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Reply):</span></span>
-<span class="line"><span style="color:#24292EFF">    decision </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> interrupt</span><span style="color:#212121">({</span><span style="color:#22863A">"draft"</span><span style="color:#212121">: state[</span><span style="color:#22863A">"draft"</span><span style="color:#212121">], </span><span style="color:#22863A">"options"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]})</span></span>
-<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"action"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> decision</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]}</span></span>
+<span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> publisher</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Board):</span></span>
+<span class="line"><span style="color:#24292EFF">    answer </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> interrupt</span><span style="color:#212121">({</span><span style="color:#22863A">"notes"</span><span style="color:#212121">: state[</span><span style="color:#22863A">"notes"</span><span style="color:#212121">], </span><span style="color:#22863A">"options"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]})</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"action"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> answer</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]}</span></span>
 <span class="line"></span></code></pre>
 <ul>
 <li>A pause requires a checkpointer to store the thread state and the payload</li>
@@ -99,13 +99,20 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="5" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="5" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="24" data-size="16:10">
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="approval-states">Approval States</h1>
-<div class="mermaid-diagram" style="aspect-ratio: 934 / 144"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-state" viewBox="0 0 934 144" style="--_bg:var(--pele-bg,#fff);--_fg:var(--pele-fg,#1f1f1f);--_m:var(--pele-muted,#6e6e6e);--_l:var(--pele-line,#1f1f1f);--_s:var(--pele-surface,#f3f3f3);--_a:var(--pele-surface-alt,#e6e6e6);--_b:var(--pele-border,#8a8a8a);--_c:var(--pele-accent,#5b7bd5);color:var(--_fg);--_fm:var(--pele-font-mono,IBM Plex Mono, ui-monospace, monospace);font:16px sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;font-family:var(--pele-font,IBM Plex Sans, Helvetica Neue, Arial, sans-serif)" fill="var(--_fg)" role="graphics-document document" aria-roledescription="state" preserveAspectRatio="xMidYMid meet"><g class="pele-edges" fill="none" stroke="var(--_l)" stroke-linecap="round"><g class="pele-edge pele-transition" data-id="edge0"><path d="M22,80L59,80" /><path class="pele-marker" d="M66,80L58,83.36L58,76.64Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge1"><path d="M157.58,72L165.68,72C170.88,72 170.88,50.5 176.08,50.5L257.94,50.5" /><path class="pele-marker" d="M264.94,50.5L256.94,53.86L256.94,47.14Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge2"><path d="M355.64,50.5L525.21,50.5" /><path class="pele-marker" d="M532.21,50.5L524.21,53.86L524.21,47.14Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge3"><path d="M632.67,42.5C641.92,42.5 641.92,30 651.17,30L783.48,30" /><path class="pele-marker" d="M790.48,30L782.48,33.36L782.48,26.64Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge4"><path d="M632.67,58.5C641.92,58.5 641.92,101.5 651.17,101.5L756.55,101.5C763.49,101.5 763.49,108 770.43,108L775.05,108" /><path class="pele-marker" d="M782.05,108L774.05,111.36L774.05,104.64Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge5"><path d="M855.4,30L900.83,30" /><path class="pele-marker" d="M907.83,30L899.83,33.36L899.83,26.64Z" fill="var(--_l)" stroke="none" /></g><g class="pele-edge pele-transition" data-id="edge6"><path d="M782.05,124L769.05,124C749.63,124 749.63,122 730.21,122L264.94,122C217.76,122 217.76,88 170.58,88L164.58,88" /><path class="pele-marker" d="M157.58,88L165.58,84.64L165.58,91.36Z" fill="var(--_l)" stroke="none" /></g></g><g class="pele-edge-labels" font-size="14"><g class="pele-edge-label" data-id="edge1"><rect x="178.08" y="40" width="59.35" height="21" rx="3" fill="var(--_bg)" /><text x="207.76" y="55.4" text-anchor="middle">interrupt</text></g><g class="pele-edge-label" data-id="edge2"><rect x="376.14" y="40" width="128.57" height="21" rx="3" fill="var(--_bg)" /><text x="440.42" y="55.4" text-anchor="middle">Command(resume)</text></g><g class="pele-edge-label" data-id="edge3"><rect x="653.17" y="19.5" width="101.38" height="21" rx="3" fill="var(--_bg)" /><text x="703.86" y="34.9" text-anchor="middle">approve or edit</text></g><g class="pele-edge-label" data-id="edge4"><rect x="682.75" y="91" width="42.23" height="21" rx="3" fill="var(--_bg)" /><text x="703.86" y="106.4" text-anchor="middle">reject</text></g></g><g class="pele-nodes"><g class="pele-node pele-state-start" data-id="root_start" transform="translate(15,80)"><circle r="7" fill="var(--_l)" /></g><g class="pele-node pele-state" data-id="Running" transform="translate(111.79,80)"><rect x="-45.79" y="-22" width="91.58" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)" /><text class="pele-label" x="0" y="5.6" text-anchor="middle">Running</text></g><g class="pele-node pele-state" data-id="Pending" transform="translate(310.29,50.5)"><rect x="-45.35" y="-22" width="90.7" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)" /><text class="pele-label" x="0" y="5.6" text-anchor="middle">Pending</text></g><g class="pele-node pele-state" data-id="Resumed" transform="translate(582.44,50.5)"><rect x="-50.23" y="-22" width="100.46" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)" /><text class="pele-label" x="0" y="5.6" text-anchor="middle">Resumed</text></g><g class="pele-node pele-state" data-id="Sent" transform="translate(822.94,30)"><rect x="-32.46" y="-22" width="64.91" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)" /><text class="pele-label" x="0" y="5.6" text-anchor="middle">Sent</text></g><g class="pele-node pele-state" data-id="Writing" transform="translate(822.94,114)"><rect x="-40.89" y="-22" width="81.78" height="44" rx="10" fill="var(--_s)" stroke="var(--_b)" /><text class="pele-label" x="0" y="5.6" text-anchor="middle">Writing</text></g><g class="pele-node pele-state-end" data-id="root_end" transform="translate(916.83,30)"><circle r="8.5" fill="var(--_bg)" stroke="var(--_l)" /><circle r="5" fill="var(--_l)" /></g></g></svg></div>
 <ul>
-<li>The reviewer's choice picks the next state :
+<li>The Publisher's choice picks the next state :
 <ul>
-<li>Approve sends the draft unchanged</li>
-<li>Edit replaces the draft, then sends it</li>
-<li>Reject returns feedback to the writing node</li>
+<li>Approve releases the notes unchanged</li>
+<li>Edit replaces the notes, then releases</li>
+<li>Reject returns feedback to the Coder</li>
+</ul>
+</li>
+<li>The run is in one of these states :
+<ul>
+<li>Running : a node is working</li>
+<li>Pending : the run waits at <code>interrupt</code>, and no process is needed</li>
+<li>Resumed : <code>Command(resume=...)</code> has delivered the answer</li>
+<li>Released : the build went out</li>
 </ul>
 </li>
 </ul>
@@ -114,21 +121,21 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="approve-edit-and-reject">Approve, Edit and Reject</h1>
 <ul>
-<li>The review node routes on the decision :</li>
+<li>The Publisher node routes on the decision :</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> review</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Reply) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Command</span><span style="color:#212121">[</span><span style="color:#24292EFF">Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"send"</span><span style="color:#212121">,</span><span style="color:#22863A"> "write"</span><span style="color:#212121">]]</span><span style="color:#24292EFF">:</span></span>
-<span class="line"><span style="color:#24292EFF">    decision </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> interrupt</span><span style="color:#212121">({</span><span style="color:#22863A">"draft"</span><span style="color:#212121">: state[</span><span style="color:#22863A">"draft"</span><span style="color:#212121">], </span><span style="color:#22863A">"options"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]})</span></span>
-<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> decision</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "approve"</span><span style="color:#212121">:</span></span>
-<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"send"</span><span style="color:#212121">)</span></span>
-<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> decision</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "edit"</span><span style="color:#212121">:</span></span>
-<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"draft"</span><span style="color:#212121">: decision[</span><span style="color:#22863A">"text"</span><span style="color:#212121">]}, goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"send"</span><span style="color:#212121">)</span></span>
-<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> decision</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "reject"</span><span style="color:#212121">:</span></span>
-<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"feedback"</span><span style="color:#212121">: decision[</span><span style="color:#22863A">"text"</span><span style="color:#212121">]}, goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"write"</span><span style="color:#212121">)</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> publisher</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Board) </span><span style="color:#212121">-></span><span style="color:#24292EFF"> Command</span><span style="color:#212121">[</span><span style="color:#24292EFF">Literal</span><span style="color:#212121">[</span><span style="color:#22863A">"release"</span><span style="color:#212121">,</span><span style="color:#22863A"> "coder"</span><span style="color:#212121">]]</span><span style="color:#24292EFF">:</span></span>
+<span class="line"><span style="color:#24292EFF">    answer </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> interrupt</span><span style="color:#212121">({</span><span style="color:#22863A">"notes"</span><span style="color:#212121">: state[</span><span style="color:#22863A">"notes"</span><span style="color:#212121">], </span><span style="color:#22863A">"options"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]})</span></span>
+<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> answer</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "approve"</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"release"</span><span style="color:#212121">)</span></span>
+<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> answer</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "edit"</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"notes"</span><span style="color:#212121">: answer[</span><span style="color:#22863A">"text"</span><span style="color:#212121">]}, goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"release"</span><span style="color:#212121">)</span></span>
+<span class="line"><span style="color:#D32F2F">    if</span><span style="color:#24292EFF"> answer</span><span style="color:#212121">[</span><span style="color:#22863A">"action"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#22863A"> "reject"</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">        return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"feedback"</span><span style="color:#212121">: answer[</span><span style="color:#22863A">"text"</span><span style="color:#212121">]}, goto</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"coder"</span><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
 <li><code>Command(update=..., goto=...)</code> updates state and routes in one return</li>
-<li>Edit replaces the draft without a model call</li>
-<li>Reject passes the reviewer's notes to <code>write</code> for a rewrite</li>
+<li>Edit replaces the notes without a model call</li>
+<li>Reject passes the Publisher's notes to <code>coder</code> for a rewrite</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo01b</code><br><code class="pill-demo pill-desc">approve-edit-reject</code></p>
@@ -175,6 +182,7 @@
 </ul>
 </li>
 <li>Resuming the parent thread delivers the reply to the child</li>
+<li>A release team subgraph can ask the Publisher while the crew waits above it</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo02</code><br><code class="pill-demo pill-desc">interrupts-in-multi-agent</code></p>
@@ -186,17 +194,18 @@
 <ul>
 <li>A subagent tool can invoke a child graph that pauses :
 <ul>
-<li>The supervisor calls the inspection specialist tool</li>
-<li>The child graph reaches <code>interrupt</code> and the pause surfaces at the supervisor</li>
-<li>The supervisor graph is paused in its <code>tools</code> node</li>
+<li>The Producer calls the release specialist as a tool</li>
+<li>The child graph reaches <code>interrupt</code> and the pause reaches the Producer</li>
+<li>The Producer's graph is paused in its <code>tools</code> node</li>
 </ul>
 </li>
-<li>Resuming the supervisor runs the tool function again :
+<li>Resuming the Producer runs the tool function again :
 <ul>
 <li>Code before the child invocation executes a second time</li>
 <li>The child receives the reply and the tool returns its <code>ToolMessage</code></li>
 </ul>
 </li>
+<li>Bus depot demo : two executions of the tool function for one tool call</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo02b</code><br><code class="pill-demo pill-desc">in-a-subagent</code></p>
@@ -211,9 +220,9 @@
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">from</span><span style="color:#24292EFF"> langchain</span><span style="color:#212121">.</span><span style="color:#24292EFF">agents</span><span style="color:#212121">.</span><span style="color:#24292EFF">middleware </span><span style="color:#D32F2F">import</span><span style="color:#24292EFF"> HumanInTheLoopMiddleware</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#24292EFF">policy </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> HumanInTheLoopMiddleware</span><span style="color:#212121">(interrupt_on</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span></span>
-<span class="line"><span style="color:#22863A">    "reserve_part"</span><span style="color:#212121">: {</span><span style="color:#22863A">"allowed_decisions"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]}</span></span>
+<span class="line"><span style="color:#22863A">    "publish_build"</span><span style="color:#212121">: {</span><span style="color:#22863A">"allowed_decisions"</span><span style="color:#212121">: [</span><span style="color:#22863A">"approve"</span><span style="color:#212121">, </span><span style="color:#22863A">"edit"</span><span style="color:#212121">, </span><span style="color:#22863A">"reject"</span><span style="color:#212121">]}</span></span>
 <span class="line"><span style="color:#212121">})</span></span>
-<span class="line"><span style="color:#24292EFF">agent </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> create_agent</span><span style="color:#212121">(llm, tools</span><span style="color:#D32F2F">=</span><span style="color:#212121">[reserve_part], middleware</span><span style="color:#D32F2F">=</span><span style="color:#212121">[policy],</span></span>
+<span class="line"><span style="color:#24292EFF">agent </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> create_agent</span><span style="color:#212121">(llm, tools</span><span style="color:#D32F2F">=</span><span style="color:#212121">[publish_build], middleware</span><span style="color:#D32F2F">=</span><span style="color:#212121">[policy],</span></span>
 <span class="line"><span style="color:#212121">                     checkpointer</span><span style="color:#D32F2F">=</span><span style="color:#6F42C1">InMemorySaver</span><span style="color:#212121">())</span></span>
 <span class="line"></span></code></pre>
 <ul>
@@ -226,16 +235,17 @@
 <h1 id="gating-agent-actions">Gating Agent Actions</h1>
 <ul>
 <li>The interrupt payload holds <code>action_requests</code> and <code>review_configs</code></li>
-<li>Each action request carries the tool <code>name</code> and the model's <code>args</code></li>
+<li>Each action request has the tool <code>name</code> and the model's <code>args</code></li>
 <li><code>Command(resume={&quot;decisions&quot;: [...]})</code> returns one decision per request</li>
 <li>Each decision has a type :
 <ul>
 <li><code>approve</code> runs the tool with the model's arguments</li>
-<li><code>edit</code> runs it with <code>edited_action[&quot;args&quot;]</code>, such as quantity 1</li>
+<li><code>edit</code> runs it with <code>edited_action[&quot;args&quot;]</code>, such as another version number</li>
 <li><code>reject</code> returns an error <code>ToolMessage</code> and the tool does not run</li>
 <li><code>respond</code> returns the reviewer's text as the tool result, without running the tool</li>
 </ul>
 </li>
+<li>Bus depot demo : quantity 2 on approve, quantity 1 after the edit, nothing on reject</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo03</code><br><code class="pill-demo pill-desc">human-in-the-loop-middleware</code></p>
@@ -247,7 +257,7 @@
 <ul>
 <li>LangChain 1.4.6 adds <code>interrupt_mode=&quot;per_call&quot;</code> :</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">gate </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> HumanInTheLoopMiddleware</span><span style="color:#212121">(interrupt_on</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"reserve_stock"</span><span style="color:#212121">: </span><span style="color:#1976D2">True</span><span style="color:#212121">},</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">gate </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> HumanInTheLoopMiddleware</span><span style="color:#212121">(interrupt_on</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"publish_build"</span><span style="color:#212121">: </span><span style="color:#1976D2">True</span><span style="color:#212121">},</span></span>
 <span class="line"><span style="color:#212121">                                interrupt_mode</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"per_call"</span><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
@@ -280,7 +290,7 @@
 <li>A scripted model with no prompt still pauses on every gated call</li>
 </ul>
 </li>
-<li>Neither layer covers the other :
+<li>Each layer covers a gap in the other :
 <ul>
 <li>The gate cannot keep a model from retrying a rejected action</li>
 <li>The prompt cannot stop a call the model makes anyway</li>
@@ -292,13 +302,13 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="loop-detection-in-graphs">Loop Detection in Graphs</h1>
 <ul>
-<li>A cyclic graph can run without making progress :
+<li>A cycle in a graph can run without making progress :
 <ul>
-<li>A model repeats the same diagnostic search when the answer is missing</li>
-<li>Two agents keep reversing each other's revisions</li>
+<li>The Coder chases a wrong diagnosis while the same test keeps failing</li>
+<li>Two agents keep reversing each other's changes</li>
 </ul>
 </li>
-<li><code>recursion_limit</code> caps the number of supersteps in one run :
+<li><code>recursion_limit</code> caps the supersteps, the rounds of node execution, in one run :
 <ul>
 <li>Exceeding it raises <code>GraphRecursionError</code></li>
 <li>The run ends in an error, with no route to a person</li>
@@ -311,18 +321,19 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="a-watchdog-node">A Watchdog Node</h1>
 <ul>
-<li>A watchdog node counts steps without new evidence :</li>
+<li>A watchdog node counts rounds that bring no new evidence :</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> watchdog</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> Investigation):</span></span>
-<span class="line"><span style="color:#24292EFF">    stalled </span><span style="color:#D32F2F">=</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"stalled"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> +</span><span style="color:#1976D2"> 1</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"evidence"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"previous"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> else</span><span style="color:#1976D2"> 0</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">def</span><span style="color:#6F42C1"> watchdog</span><span style="color:#24292EFF">(</span><span style="color:#FF9800">state</span><span style="color:#212121">:</span><span style="color:#24292EFF"> FixLoop):</span></span>
+<span class="line"><span style="color:#24292EFF">    stalled </span><span style="color:#D32F2F">=</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"stalled"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> +</span><span style="color:#1976D2"> 1</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"failing"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> ==</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"previous"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> else</span><span style="color:#1976D2"> 0</span></span>
 <span class="line"><span style="color:#24292EFF">    stop </span><span style="color:#D32F2F">=</span><span style="color:#24292EFF"> stalled </span><span style="color:#D32F2F">>=</span><span style="color:#1976D2"> 2</span><span style="color:#D32F2F"> or</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"attempts"</span><span style="color:#212121">]</span><span style="color:#D32F2F"> >=</span><span style="color:#1976D2"> 4</span></span>
-<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"previous"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"evidence"</span><span style="color:#212121">],</span><span style="color:#22863A"> "stalled"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> stalled</span><span style="color:#212121">,</span></span>
-<span class="line"><span style="color:#22863A">            "status"</span><span style="color:#212121">:</span><span style="color:#22863A"> "manual review"</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> stop </span><span style="color:#D32F2F">else</span><span style="color:#22863A"> "continue"</span><span style="color:#212121">}</span></span>
+<span class="line"><span style="color:#D32F2F">    return</span><span style="color:#212121"> {</span><span style="color:#22863A">"previous"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> state</span><span style="color:#212121">[</span><span style="color:#22863A">"failing"</span><span style="color:#212121">],</span><span style="color:#22863A"> "stalled"</span><span style="color:#212121">:</span><span style="color:#24292EFF"> stalled</span><span style="color:#212121">,</span></span>
+<span class="line"><span style="color:#22863A">            "status"</span><span style="color:#212121">:</span><span style="color:#22863A"> "ask the Producer"</span><span style="color:#D32F2F"> if</span><span style="color:#24292EFF"> stop </span><span style="color:#D32F2F">else</span><span style="color:#22863A"> "continue"</span><span style="color:#212121">}</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>The watchdog runs after each diagnostic step</li>
-<li>Two stalled steps or four attempts route the run to manual review</li>
-<li>The run ends in the review queue before it reaches <code>recursion_limit</code></li>
+<li>The watchdog runs after each round of the fix loop</li>
+<li>Two rounds on the same failing test, or four attempts, send the run to the Producer</li>
+<li>The run stops before it reaches <code>recursion_limit</code></li>
+<li>Bus depot demo : the watchdog routed a stalled diagnosis to manual review on turn 2</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo04</code><br><code class="pill-demo pill-desc">loop-detection</code></p>
@@ -350,9 +361,9 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="retry-strategies-and-backoff">Retry Strategies and Backoff</h1>
 <ul>
-<li><code>RetryPolicy</code> from module 04 retries a node on a transient exception :
+<li><code>RetryPolicy</code> from module 04 retries a node on a transient exception, a failure that may pass by itself :
 <ul>
-<li>Retry a timeout or an unavailable service</li>
+<li>Retry a timeout or an unavailable asset store</li>
 <li>Fail a validation error at once ; <code>retry_on</code> selects the exceptions</li>
 </ul>
 </li>
@@ -382,14 +393,14 @@
 <span class="line"><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>Each tier answers with less authority :
+<li>Each tier has less authority than the one before :
 <ul>
-<li><code>live</code> reads current stock and may back a reservation</li>
-<li><code>snapshot</code> reads cached stock and marks the answer as possibly stale</li>
-<li><code>manual</code> opens a ticket for a person to check the shelf</li>
+<li><code>live</code> reads the asset store and may clear a sprite for release</li>
+<li><code>snapshot</code> reads a cached copy and marks the answer as possibly stale</li>
+<li><code>manual</code> asks a person to check</li>
 </ul>
 </li>
-<li>A fallback answer carries its source and does not authorize a reservation</li>
+<li>A fallback answer states its source and clears nothing for release</li>
 <li>In a graph, module 04's <code>error_handler</code> with <code>Command(goto=...)</code> gives the same tiers</li>
 </ul>
 <blockquote>
@@ -402,8 +413,8 @@
 <ul>
 <li>A subgraph lets one team build and test one stage :
 <ul>
-<li>The diagnosis team owns the lookup workflow</li>
-<li>The reporting team owns the report workflow</li>
+<li>The design team owns the pitch workflow</li>
+<li>The test team owns the rule and bot workflow</li>
 </ul>
 </li>
 <li>A compiled child graph mounts as a node in the parent :
@@ -413,6 +424,7 @@
 </ul>
 </li>
 <li>Each child graph can be tested and traced on its own</li>
+<li>Bus depot demo : a lookup workflow and a report workflow</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo06</code><br><code class="pill-demo pill-desc">composition-and-durability</code></p>
@@ -422,20 +434,21 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="conditional-branching-at-scale">Conditional Branching at Scale</h1>
 <ul>
-<li>A workflow with many specialist queues needs many branches :
+<li>A studio with many teams needs many branches :
 <ul>
-<li>An <code>if/elif</code> chain in a router grows with every queue</li>
+<li>An <code>if/elif</code> chain in a router grows with every team</li>
 <li>A routing table keeps the rules apart from the nodes</li>
 </ul>
 </li>
-<li><code>add_conditional_edges</code> maps each queue to a node via <code>path_map</code> :</li>
+<li><code>add_conditional_edges</code> maps each team to a node via <code>path_map</code> :</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">routes </span><span style="color:#D32F2F">=</span><span style="color:#212121"> {</span><span style="color:#22863A">"F-CE"</span><span style="color:#212121">:</span><span style="color:#22863A"> "electric"</span><span style="color:#212121">,</span><span style="color:#22863A"> "F-MM"</span><span style="color:#212121">:</span><span style="color:#22863A"> "diesel"</span><span style="color:#212121">,</span><span style="color:#22863A"> "F-CD"</span><span style="color:#212121">:</span><span style="color:#22863A"> "doors"</span><span style="color:#212121">}</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">routes </span><span style="color:#D32F2F">=</span><span style="color:#212121"> {</span><span style="color:#22863A">"puzzle"</span><span style="color:#212121">:</span><span style="color:#22863A"> "puzzle_team"</span><span style="color:#212121">,</span><span style="color:#22863A"> "arcade"</span><span style="color:#212121">:</span><span style="color:#22863A"> "arcade_team"</span><span style="color:#212121">,</span><span style="color:#22863A"> "racing"</span><span style="color:#212121">:</span><span style="color:#22863A"> "racing_team"</span><span style="color:#212121">}</span></span>
 <span class="line"><span style="color:#24292EFF">path_map </span><span style="color:#D32F2F">=</span><span style="color:#212121"> {</span><span style="color:#24292EFF">name</span><span style="color:#212121">:</span><span style="color:#24292EFF"> name </span><span style="color:#D32F2F">for</span><span style="color:#24292EFF"> name </span><span style="color:#D32F2F">in</span><span style="color:#1976D2"> set</span><span style="color:#212121">(routes.</span><span style="color:#6F42C1">values</span><span style="color:#212121">())</span><span style="color:#D32F2F"> |</span><span style="color:#212121"> {</span><span style="color:#22863A">"manual"</span><span style="color:#212121">}}</span></span>
-<span class="line"><span style="color:#24292EFF">branching</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_conditional_edges</span><span style="color:#212121">(</span><span style="color:#22863A">"classify"</span><span style="color:#212121">, </span><span style="color:#D32F2F">lambda</span><span style="color:#FF9800"> s</span><span style="color:#212121">: s[</span><span style="color:#22863A">"queue"</span><span style="color:#212121">], path_map)</span></span>
+<span class="line"><span style="color:#24292EFF">branching</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_conditional_edges</span><span style="color:#212121">(</span><span style="color:#22863A">"classify"</span><span style="color:#212121">, </span><span style="color:#D32F2F">lambda</span><span style="color:#FF9800"> s</span><span style="color:#212121">: s[</span><span style="color:#22863A">"team"</span><span style="color:#212121">], path_map)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li>An unknown code routes to the <code>manual</code> queue</li>
+<li>An unknown genre routes to the <code>manual</code> queue</li>
+<li>Bus depot demo : <code>F-CE-110</code> routes to <code>electric</code></li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo06b</code><br><code class="pill-demo pill-desc">branching-at-scale</code></p>
@@ -445,7 +458,8 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="durable-execution">Durable Execution</h1>
 <ul>
-<li>A checkpointer saves the state after every step</li>
+<li>Durable execution saves the project board after every step</li>
+<li>A crash at the Tester restarts at the Tester</li>
 <li><code>durability</code> sets when the save is written :
 <ul>
 <li><code>&quot;async&quot;</code>, the default : while the next step runs</li>
@@ -453,9 +467,8 @@
 <li><code>&quot;exit&quot;</code> : only when the run ends</li>
 </ul>
 </li>
-<li>A crash during a step leaves the earlier checkpoints intact</li>
-<li>A resumed thread continues from the latest checkpoint</li>
-<li>Completed steps do not run again</li>
+<li>A crash during the Tester leaves the boards saved after Designer and Coder on disk</li>
+<li>Their model calls are not paid twice, because Designer and Coder do not run again</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="22" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="22" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="24" data-size="16:10">
@@ -464,17 +477,18 @@
 <ul>
 <li>A checkpointer preserves completed work before a node crashes :</li>
 </ul>
-<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">with</span><span style="color:#24292EFF"> SqliteSaver</span><span style="color:#212121">.</span><span style="color:#6F42C1">from_conn_string</span><span style="color:#212121">(</span><span style="color:#22863A">"workflow-checkpoints.sqlite"</span><span style="color:#212121">)</span><span style="color:#D32F2F"> as</span><span style="color:#24292EFF"> saver</span><span style="color:#212121">:</span></span>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">with</span><span style="color:#24292EFF"> SqliteSaver</span><span style="color:#212121">.</span><span style="color:#6F42C1">from_conn_string</span><span style="color:#212121">(</span><span style="color:#22863A">"studio-checkpoints.sqlite"</span><span style="color:#212121">)</span><span style="color:#D32F2F"> as</span><span style="color:#24292EFF"> saver</span><span style="color:#212121">:</span></span>
 <span class="line"><span style="color:#24292EFF">    running </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> durable_builder</span><span style="color:#212121">().</span><span style="color:#6F42C1">compile</span><span style="color:#212121">(checkpointer</span><span style="color:#D32F2F">=</span><span style="color:#212121">saver)</span></span>
-<span class="line"><span style="color:#4a9c59">    # Node 'prepare' succeeds, node 'finish' raises RuntimeError</span></span>
+<span class="line"><span style="color:#4a9c59">    # Node 'coder' succeeds, node 'tester' raises RuntimeError</span></span>
 <span class="line"><span style="color:#24292EFF">    running</span><span style="color:#212121">.</span><span style="color:#6F42C1">invoke</span><span style="color:#212121">(initial, crash_cfg, durability</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"sync"</span><span style="color:#212121">)</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#D32F2F">with</span><span style="color:#24292EFF"> SqliteSaver</span><span style="color:#212121">.</span><span style="color:#6F42C1">from_conn_string</span><span style="color:#212121">(</span><span style="color:#22863A">"workflow-checkpoints.sqlite"</span><span style="color:#212121">)</span><span style="color:#D32F2F"> as</span><span style="color:#24292EFF"> saver</span><span style="color:#212121">:</span></span>
+<span class="line"><span style="color:#D32F2F">with</span><span style="color:#24292EFF"> SqliteSaver</span><span style="color:#212121">.</span><span style="color:#6F42C1">from_conn_string</span><span style="color:#212121">(</span><span style="color:#22863A">"studio-checkpoints.sqlite"</span><span style="color:#212121">)</span><span style="color:#D32F2F"> as</span><span style="color:#24292EFF"> saver</span><span style="color:#212121">:</span></span>
 <span class="line"><span style="color:#24292EFF">    restarted </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> durable_builder</span><span style="color:#212121">().</span><span style="color:#6F42C1">compile</span><span style="color:#212121">(checkpointer</span><span style="color:#D32F2F">=</span><span style="color:#212121">saver)</span></span>
 <span class="line"><span style="color:#24292EFF">    recovered </span><span style="color:#D32F2F">=</span><span style="color:#24292EFF"> restarted</span><span style="color:#212121">.</span><span style="color:#6F42C1">invoke</span><span style="color:#212121">(</span><span style="color:#1976D2">None</span><span style="color:#212121">, crash_cfg, durability</span><span style="color:#D32F2F">=</span><span style="color:#22863A">"sync"</span><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>invoke(None, cfg)</code> runs only <code>finish</code> ; the model call in <code>prepare</code> is not repeated</li>
+<li><code>invoke(None, cfg)</code> runs only <code>tester</code> ; the Coder's work is not repeated</li>
+<li>Bus depot demo : <code>prepare</code> and <code>finish</code></li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo06c</code><br><code class="pill-demo pill-desc">resuming-after-a-crash</code></p>
@@ -485,7 +499,8 @@
 <h1 id="graceful-workflow-drain">Graceful Workflow Drain</h1>
 <ul>
 <li>A killed worker can stop in the middle of a node</li>
-<li><code>RunControl</code> from <code>langgraph.runtime</code> stops a run between nodes :
+<li>A drain stops a run between nodes, for instance before a deploy</li>
+<li><code>RunControl</code> from <code>langgraph.runtime</code> provides it :
 <ul>
 <li>A signal handler or a node calls <code>request_drain(reason)</code></li>
 <li>The running node finishes and its checkpoint is saved</li>
@@ -505,8 +520,8 @@
 <li><code>HumanInTheLoopMiddleware</code> pauses calls to the tools it lists, per turn or per call</li>
 <li>A watchdog node stops a stalled run ; a guard blocks a repeated call</li>
 <li><code>RetryPolicy</code> retries with backoff ; <code>with_fallbacks</code> falls back by tier</li>
-<li>Subgraphs compose workflows ; a routing table scales branching</li>
-<li>A checkpointer resumes a run after a crash or a drain</li>
+<li>Subgraphs compose workflows ; a routing table maps each team to a node</li>
+<li>After a crash or a drain, <code>invoke(None, cfg)</code> restarts at the first unfinished node</li>
 </ul>
 <blockquote>
 <p><code class="pill-exercise pill-id">exercise07</code><br><code class="pill-exercise pill-desc">Approval in a Subagent</code></p>

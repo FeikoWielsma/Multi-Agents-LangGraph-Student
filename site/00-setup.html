@@ -1002,7 +1002,7 @@ a.ex-row:hover { border-color: var(--accent); }
 </header>
 <div class="brief">
 <p>Open a terminal in the repository root on the classroom laptop. The trainer has installed <code>uv</code>, the repository and its packages ; you add the course key, run the check and start Jupyter.</p>
-<p>Following the course online? Work in a GitHub Codespace, set up as the README's section &quot;In GitHub Codespaces&quot; describes. The key is then a Codespaces secret, so skip step 1 ; run step 2 in the Codespace terminal, and open notebooks in the editor instead of step 3.</p>
+<p>Following the course online? Work in a GitHub Codespace, set up as the README's section &quot;In GitHub Codespaces&quot; describes. In a Codespace the key is a Codespaces secret. Skip step 1, run step 2 in the Codespace terminal, and open notebooks in the editor instead of step 3.</p>
 </div>
 <section class="step" id="step-1" data-step="1">
 <h2><span class="num">Step 1</span><span class="title">Key</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="1" data-step="1"> Done</label></h2>
@@ -1010,13 +1010,13 @@ a.ex-row:hover { border-color: var(--accent); }
 <p>Copy <code>.env.example</code> to <code>.env</code> and paste the OpenRouter key from the trainer after <code>COURSE_API_KEY=</code> :</p>
 <div class="codeblock"><span class="lang">powershell</span><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">Copy-Item</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> .env.example .env</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">notepad .env</span></span></code></pre></div>
-<p>Leave the other values as they are. Never paste a key into a notebook ; <code>.env</code> is ignored by git.</p>
+<p>Leave the other values as they are. Keep the key in <code>.env</code>, which git ignores, and never paste it into a notebook.</p>
 
 </section>
 <section class="step" id="step-2" data-step="2">
 <h2><span class="num">Step 2</span><span class="title">Check</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="2" data-step="2"> Done</label></h2>
 <div class="codeblock"><span class="lang">powershell</span><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">uv run python check_setup.py</span></span></code></pre></div>
-<p>Does it report <code>7 of 7 checks passed</code>? An authentication failure on every line means the key is missing or wrong. A missing package means <code>uv sync --group server</code> has to run first. One FAIL with a 5xx error is the provider : run the check again. Tell the trainer either way.</p>
+<p>Does it report <code>7 of 7 checks passed</code>? An authentication failure on every line means the key is missing or wrong. A missing package means <code>uv sync --group server</code> has to run first. One FAIL with a 5xx error comes from the provider ; run the check again. Tell the trainer about any failure.</p>
 
 </section>
 <section class="step" id="step-3" data-step="3">

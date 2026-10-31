@@ -1,0 +1,6 @@
+[
+  {"id": "second-chance", "title": "Comet Snake : second chance", "brief": "Playtesters love Comet Snake but rage-quit when one comet ends a long run. Give them one way to survive."},
+  {"id": "big-prize", "title": "Comet Snake : big prize", "brief": "The score chase is flat. Give greedy players something rare and worth a detour."},
+  {"id": "shortcut", "title": "Comet Snake : shortcut", "brief": "Long snakes take too long to cross the map. Give the player a way to jump across it."},
+  {"id": "breather", "title": "Comet Snake : breather", "brief": "After a few speed-ups the comets feel relentless. Give the player a short moment to breathe."}
+]

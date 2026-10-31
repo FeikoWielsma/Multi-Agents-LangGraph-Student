@@ -1003,7 +1003,7 @@ a.ex-row:hover { border-color: var(--accent); }
   </dl>
 </header>
 <div class="brief">
-<p>Open <code>exercises/exercise04-a-multi-agent-visit-planner.ipynb</code> and run the setup cell. You plan an engineer's visit to Aurelia site S04 with a parts agent and a manuals agent running in parallel, and a code checker, then compare it with one agent ; the solution is <code>solutions/exercise04-a-multi-agent-visit-planner.ipynb</code>.</p>
+<p>Open <code>exercises/exercise04-a-multi-agent-visit-planner.ipynb</code> and run the setup cell. You plan an engineer's visit to Aurelia site S04 with a parts agent and a manuals agent running in parallel and a checker written in code, then compare that design with one agent ; the solution is <code>solutions/exercise04-a-multi-agent-visit-planner.ipynb</code>.</p>
 <p>Worked examples to revisit : <code>demo03b · router-parallel</code>, <code>demo06b · workflows-parallel</code>, <code>demo07 · maker-checker</code>, <code>demo09 · what-each-pattern-costs</code>.</p>
 <p>Made up, not from work. The Aurelia sites, devices and manuals are fictional.</p>
 </div>
@@ -1027,7 +1027,7 @@ a.ex-row:hover { border-color: var(--accent); }
 </section>
 <section class="step" id="step-3" data-step="3">
 <h2><span class="num">Step 3</span><span class="title">Parallel specialists</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="3" data-step="3"> Done</label></h2>
-<p>This is the Parallel Agents workflow of module 05 : every visit needs both specialists, so no classifier chooses between them. The parts agent receives a ready query from <code>parts_question</code> : the open work orders at the site and the parts for each device's model.</p>
+<p>The graph is the Parallel Agents workflow of module 05. No classifier chooses between the specialists, because every visit needs both. <code>parts_question</code> gives the parts agent a ready query : the open work orders at the site and the parts for each device's model.</p>
 <p>Complete <code>manuals_question</code> : ask which maintenance intervals and service bulletins apply to the devices in <code>state[&quot;devices&quot;]</code>. Then complete <code>dispatch</code> with one <code>Send</code> to <code>parts</code> and one to <code>manuals</code>, and <code>after_check</code> : <code>&quot;assemble&quot;</code> while problems remain and <code>rounds</code> is under 2, otherwise <code>END</code>. Replace the blank line with an edge from both specialists to <code>assemble</code>.</p>
 <p>Which nodes does <code>dispatch</code> send to, and what does <code>after_check</code> return once <code>rounds</code> reaches 2?</p>
 

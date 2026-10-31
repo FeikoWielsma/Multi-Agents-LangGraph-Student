@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Star Slide</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #070b1c; color: #e6ecff; font: 16px/1.4 ui-monospace, Consolas, monospace; }
+  main { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; }
+  canvas { border: 2px solid #28335c; border-radius: 6px; image-rendering: pixelated; }
+  #hud { display: flex; gap: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <div id="hud"><span id="score">score 0</span><span id="pace">200 ms</span><span id="status">arrow keys steer, R restarts</span></div>
+  <canvas id="game" width="720" height="540"></canvas>
+</main>
+
+<!-- The Artist's part : colours and sprites, 7 rows of 7 characters, # is a filled pixel -->
+<script id="theme" type="application/json">
+/* THEME:START */
+{
+  "name": "Quiet Belt",
+  "background": "#11162e",
+  "grid": "#232b52",
+  "head": "#ffc46b",
+  "body": "#ffc46b",
+  "star": "#8fe3ff",
+  "comet": "#7c88b8",
+  "extra": "#7fb4ff",
+  "sprites": {
+    "star": [
+      "...#...",
+      "...#...",
+      "..###..",
+      "#######",
+      "..###..",
+      ".#.#.#.",
+      "#.....#"
+    ],
+    "comet": [
+      ".#####.",
+      "#######",
+      "#######",
+      "#######",
+      "#######",
+      "#######",
+      ".#####."
+    ],
+    "extra": [
+      "..###..",
+      ".#...#.",
+      "#..#..#",
+      "#.###.#",
+      "#..#..#",
+      ".#...#.",
+      "..###.."
+    ]
+  }
+}
+/* THEME:END */
+</script>
+
+<!-- The Coder's part : pure game logic. No DOM, no clock, no Math.random. Runs in the browser and in QuickJS. -->
+<script id="logic">
+/* LOGIC:START */
+const COLS = 24;
+const ROWS = 18;
+const START_MS = 70;
+const VECTORS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+const OPPOSITE = {};
+
+function clone(value) { return JSON.parse(JSON.stringify(value)); }
+function wrap(value, size) { return (value + size) % size; }
+function same(a, b) { return a.x === b.x && a.y === b.y; }
+
+// Star Slide, the puzzle team's game. The ship slides until a rock or an edge stops it.
+// Collect every star in as few slides as you can. The level is fixed, so the game needs no randomness.
+// A rock is a comet that never moves, so the kit draws it without knowing the game.
+const LEVEL = [
+  '........*...............',
+  '.#................#.....',
+  '...........*............',
+  '....#...................',
+  '............#...........',
+  '........................',
+  '.................#......',
+  '.......#................',
+  '........................',
+  '...#.................*..',
+  '..............#.........',
+  '........................',
+  '........................',
+  '.................#......',
+  '.#......................',
+  '.........#..............',
+  '......................#.',
+  '........*.......*.......',
+];
+
+function init(seed) {
+  const state = {
+    snake: [{ x: 12, y: 9 }], dir: 'right', stars: [], comets: [], extras: [],
+    score: 0, eaten: 0, tickMs: START_MS, ticks: 0, over: false, reason: null, seed: seed >>> 0, slide: null, slides: 0,
+  };
+  LEVEL.forEach((row, y) => [...row].forEach((mark, x) => {
+    if (mark === '*') state.stars.push({ x, y });
+    if (mark === '#') state.comets.push({ x, y, dx: 0, dy: 0 });
+  }));
+  return state;
+}
+
+// One tick. An input starts a slide. A slide moves one cell per tick until a rock or an edge stops it.
+function step(previous, input) {
+  const state = clone(previous);
+  if (state.over) return state;
+  if (!state.slide && input && VECTORS[input]) {
+    state.slide = input;
+    state.dir = input;
+    state.slides += 1;
+  }
+  state.ticks += 1;
+  if (!state.slide) return state;
+  const vector = VECTORS[state.slide];
+  const head = state.snake[0];
+  const target = { x: head.x + vector.x, y: head.y + vector.y };
+  const outside = target.x < 0 || target.x >= COLS || target.y < 0 || target.y >= ROWS;
+  if (outside || state.comets.some(rock => same(rock, target))) {
+    state.slide = null;
+    return state;
+  }
+  state.snake = [target];
+  const star = state.stars.findIndex(item => same(item, target));
+  if (star >= 0) {
+    state.stars.splice(star, 1);
+    state.score += 1;
+    state.eaten += 1;
+  }
+  if (!state.stars.length) {
+    state.over = true;
+    state.reason = 'cleared';
+  }
+  return state;
+}
+/* LOGIC:END */
+</script>
+
+<!-- The Tester's bot. Reads the same state, returns an input. Add ?bot to the address to watch it play. -->
+<script id="bot">
+// The puzzle bot : a breadth-first search over ship position and stars left finds the shortest list of slides.
+let botPlan = null;
+
+function solveSlide(state) {
+  const rocks = new Set(state.comets.map(rock => rock.x + ',' + rock.y));
+  const stars = state.stars.map(star => star.x + ',' + star.y);
+  const start = { x: state.snake[0].x, y: state.snake[0].y, left: (1 << stars.length) - 1, path: [] };
+  const seen = new Set([start.x + ',' + start.y + ',' + start.left]);
+  let frontier = [start];
+  while (frontier.length) {
+    const after = [];
+    for (const node of frontier) {
+      for (const [name, vector] of Object.entries(VECTORS)) {
+        let { x, y, left } = node;
+        while (true) {
+          const nextX = x + vector.x;
+          const nextY = y + vector.y;
+          if (nextX < 0 || nextX >= COLS || nextY < 0 || nextY >= ROWS || rocks.has(nextX + ',' + nextY)) break;
+          x = nextX;
+          y = nextY;
+          const index = stars.indexOf(x + ',' + y);
+          if (index >= 0) left &= ~(1 << index);
+          if (!left) return [...node.path, name];
+        }
+        const id = x + ',' + y + ',' + left;
+        if (!seen.has(id)) {
+          seen.add(id);
+          after.push({ x, y, left, path: [...node.path, name] });
+        }
+      }
+    }
+    frontier = after;
+  }
+  return [];
+}
+
+function botMove(state) {
+  if (state.slide) return null;
+  if (!botPlan || state.slides === 0) botPlan = solveSlide(state);
+  return botPlan[state.slides] || null;
+}
+</script>
+
+<!-- The kit's part : draws the state and reads the keyboard. Knows nothing about the rules. -->
+<script id="view">
+const theme = JSON.parse(document.getElementById('theme').textContent.replace(/\/\*.*?\*\//g, ''));
+const canvas = document.getElementById('game');
+const paint = canvas.getContext('2d');
+const query = new URLSearchParams(location.search);
+const useBot = query.has('bot');
+const firstSeed = Number(query.get('seed') || 7);
+const CELL = canvas.width / COLS;
+const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
+let state = init(firstSeed);
+let pending = null;
+
+function sprite(rows, cell, colour) {
+  paint.fillStyle = colour;
+  const pixel = CELL / rows.length;
+  rows.forEach((row, y) => [...row].forEach((mark, x) => {
+    if (mark === '#') paint.fillRect(cell.x * CELL + x * pixel, cell.y * CELL + y * pixel, Math.ceil(pixel), Math.ceil(pixel));
+  }));
+}
+
+// A fixed sky : the same points on every frame, so the background does not flicker.
+const SKY = Array.from({ length: 90 }, (_, index) => ({
+  x: (index * 97 + 13) % canvas.width, y: (index * 61 + 29) % canvas.height, size: 1 + index % 3, alpha: 0.25 + (index % 5) / 8,
+}));
+
+function glow(colour, reach, action) {
+  paint.save();
+  paint.shadowColor = colour;
+  paint.shadowBlur = reach;
+  action();
+  paint.restore();
+}
+
+function drawSnake() {
+  const { snake } = state;
+  snake.slice().reverse().forEach((part, reversed) => {
+    const index = snake.length - 1 - reversed;
+    const inset = index === 0 ? 2 : 3 + 5 * (index / snake.length);
+    paint.globalAlpha = index === 0 ? 1 : 1 - 0.45 * (index / snake.length);
+    paint.fillStyle = index === 0 ? theme.head : theme.body;
+    paint.beginPath();
+    paint.roundRect(part.x * CELL + inset, part.y * CELL + inset, CELL - 2 * inset, CELL - 2 * inset, 7);
+    paint.fill();
+  });
+  paint.globalAlpha = 1;
+  const head = snake[0];
+  const facing = VECTORS[state.dir];
+  paint.fillStyle = theme.background;
+  for (const side of [-1, 1]) {
+    const eyeX = (head.x + 0.5) * CELL + facing.x * 6 + facing.y * side * 6;
+    const eyeY = (head.y + 0.5) * CELL + facing.y * 6 + facing.x * side * 6;
+    paint.beginPath();
+    paint.arc(eyeX, eyeY, 3, 0, Math.PI * 2);
+    paint.fill();
+  }
+}
+
+function drawComet(item) {
+  for (let back = 3; back >= 1; back--) {
+    paint.globalAlpha = 0.34 - back * 0.09;
+    paint.fillStyle = theme.comet;
+    const x = wrap(item.x - item.dx * back, COLS);
+    const y = wrap(item.y - item.dy * back, ROWS);
+    paint.beginPath();
+    paint.arc((x + 0.5) * CELL, (y + 0.5) * CELL, CELL * (0.42 - back * 0.08), 0, Math.PI * 2);
+    paint.fill();
+  }
+  paint.globalAlpha = 1;
+  sprite(theme.sprites.comet, item, theme.comet);
+}
+
+function draw() {
+  paint.fillStyle = theme.background;
+  paint.fillRect(0, 0, canvas.width, canvas.height);
+  paint.fillStyle = '#ffffff';
+  SKY.forEach(point => { paint.globalAlpha = point.alpha * 0.6; paint.fillRect(point.x, point.y, point.size, point.size); });
+  paint.globalAlpha = 0.55;
+  paint.strokeStyle = theme.grid;
+  for (let x = 0; x <= COLS; x++) { paint.beginPath(); paint.moveTo(x * CELL, 0); paint.lineTo(x * CELL, canvas.height); paint.stroke(); }
+  for (let y = 0; y <= ROWS; y++) { paint.beginPath(); paint.moveTo(0, y * CELL); paint.lineTo(canvas.width, y * CELL); paint.stroke(); }
+  paint.globalAlpha = 1;
+  glow(theme.extra, 14, () => state.extras.forEach(item => sprite(theme.sprites.extra, item, theme.extra)));
+  glow(theme.star, 16, () => state.stars.forEach(item => sprite(theme.sprites.star, item, theme.star)));
+  glow(theme.comet, 14, () => state.comets.forEach(drawComet));
+  glow(theme.head, 12, drawSnake);
+  if (state.over) {
+    paint.fillStyle = 'rgba(5, 8, 24, 0.72)';
+    paint.fillRect(0, 0, canvas.width, canvas.height);
+    paint.textAlign = 'center';
+    const endings = { comet: 'hit by a comet', self: 'bit its own tail', cleared: 'every star collected' };
+    paint.fillStyle = state.reason === 'cleared' ? theme.head : theme.comet;
+    paint.font = 'bold 56px ui-monospace, Consolas, monospace';
+    paint.fillText(state.reason === 'cleared' ? 'CLEARED' : 'GAME OVER', canvas.width / 2, canvas.height / 2 - 12);
+    paint.fillStyle = '#e6ecff';
+    paint.font = '22px ui-monospace, Consolas, monospace';
+    paint.fillText('score ' + state.score + ' : ' + (endings[state.reason] || state.reason), canvas.width / 2, canvas.height / 2 + 30);
+  }
+  document.getElementById('score').textContent = 'score ' + state.score;
+  document.getElementById('pace').textContent = state.tickMs + ' ms';
+  document.getElementById('status').textContent = state.over ? 'R restarts' : 'arrow keys steer, R restarts';
+}
+
+function tick() {
+  if (!state.over) {
+    const input = useBot ? botMove(state) : pending;
+    pending = null;
+    state = step(state, input);
+    draw();
+  }
+  setTimeout(tick, state.tickMs);
+}
+
+addEventListener('keydown', event => {
+  if (KEYS[event.key]) { pending = KEYS[event.key]; event.preventDefault(); }
+  if (event.key === 'r' || event.key === 'R') { state = init(firstSeed); draw(); }
+});
+draw();
+setTimeout(tick, state.tickMs);
+</script>
+</body>
+</html>

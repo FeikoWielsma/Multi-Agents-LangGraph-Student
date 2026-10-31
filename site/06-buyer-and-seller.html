@@ -1024,14 +1024,14 @@ a.ex-row:hover { border-color: var(--accent); }
 </section>
 <section class="step" id="step-3" data-step="3">
 <h2><span class="num">Step 3</span><span class="title">Settlement</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="3" data-step="3"> Done</label></h2>
-<p>Write the body of <code>settle</code> : an invalid quantity or prices that do not overlap go to review ; otherwise a draft at the midpoint price, rounded down to a whole euro. Join <code>buyer</code> and <code>seller</code> into <code>settle</code>, then run the four fixture checks.</p>
+<p>Write the body of <code>settle</code> : an invalid quantity or prices that do not overlap go to review ; otherwise return a draft at the midpoint price, rounded down to a whole euro. Join <code>buyer</code> and <code>seller</code> into <code>settle</code>, then run the four fixture checks.</p>
 <p>Why does <code>proposals</code> need a reducer when both agents write it in the same step?</p>
 <hr>
 
 </section>
 <section class="step" id="step-4" data-step="4">
 <h2><span class="num">Step 4</span><span class="title">Negotiation</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="4" data-step="4"> Done</label></h2>
-<p>Run the two rounds. Only the public prices of round 1 go into round 2, and each agent moves halfway toward the other's price. A quote equal to a private limit would disclose that limit. Round 2 is fixed by design : both sides quote the midpoint of the opening prices, and the private limits only bound it.</p>
+<p>Run the two rounds. Only the public prices of round 1 go into round 2, and the prompt asks each agent to move halfway toward the other's price. Both quotes then sit at the midpoint of the opening prices, and the private limits only bound it. A quote equal to a private limit would disclose that limit. The model can still keep the prices apart, and the settlement rule then sends the result to review.</p>
 <p>What were the opening offers, and what did round 2 settle on? Which rule would keep non-overlapping prices in review?</p>
 <hr>
 
