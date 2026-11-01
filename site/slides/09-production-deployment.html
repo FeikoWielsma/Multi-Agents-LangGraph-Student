@@ -46,7 +46,7 @@
 <h1 id="agent-server-resources">Agent Server Resources</h1>
 <ul>
 <li>An assistant binds a <code>graph_id</code> from <code>langgraph.json</code> to runtime defaults</li>
-<li>A thread holds checkpointed state across runs</li>
+<li>A thread keeps checkpointed state across runs</li>
 <li>A run applies input to an assistant on a thread, and returns a status and results</li>
 <li>Background runs support join, cancel and stream</li>
 <li>Follow-ups reuse the same thread id, so earlier messages stay available</li>
@@ -168,7 +168,7 @@
 <li>PostgreSQL is the default production checkpoint backend</li>
 <li>Local <code>langgraph dev</code> keeps development files under <code>.langgraph_api</code></li>
 <li>How long threads are kept follows product and compliance requirements</li>
-<li>A Store holds memory across threads, such as the studio style guide</li>
+<li>A Store keeps memory across threads, such as the studio style guide</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="11" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="11" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="35" data-size="16:10">

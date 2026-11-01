@@ -1005,40 +1005,51 @@ a.ex-row:hover { border-color: var(--accent); }
 </header>
 <div class="brief">
 <p>Open <code>exercises/exercise05-two-agents-over-a2a.ipynb</code> and run the setup cell. You serve an Aurelia parts agent and a service desk agent on two local Agent Servers and let the desk call the parts agent over A2A by replacing the <code>____</code> blanks ; the solution is <code>solutions/exercise05-two-agents-over-a2a.ipynb</code>.</p>
+<p>Agents in one Python process can share variables, and agents on separate servers can only exchange messages. A2A is a protocol for those messages. Here each agent runs in its own process with its own storage, and the desk asks the parts agent for stock from inside its own graph. Run the cells in order ; a collapsed Hint and a collapsed Solution follow each blank for when you are stuck.</p>
 <p>Worked examples to revisit : <code>demo03 · served-agents</code>, <code>demo04 · two-agents-over-a2a</code>.</p>
 <p>Made up, not from work. The Aurelia parts and stock are fictional.</p>
 </div>
 <section class="step" id="step-1" data-step="1">
 <h2><span class="num">Step 1</span><span class="title">Graph sources</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="1" data-step="1"> Done</label></h2>
-<p>In <code>coordinator_source</code>, fill the assistant id key from <code>/assistants/search</code> and write the JSON-RPC 2.0 request : the A2A 1.0 method name (not the legacy <code>message/send</code>), a user message in the A2A 1.0 shape with the <code>contextId</code>, and the Agent Server option that keeps the response history to this task. The <code>COORDINATOR</code> source in module 06 demo04 builds the same request, and the slide <button type="button" class="slide-ref" data-slide="06-agent-communication-18" title="Show the slide"><em>Two Agents over A2A</em></button> shows it. Step 3 checks the A2A 1.0 shape : role <code>ROLE_USER</code> and parts without <code>kind</code>. Run the cell that writes both sources into the <code>parts</code> and <code>desk</code> runtime folders.</p>
+<p>A served agent is a Python file that a separate server process loads, so this step writes both graphs as source text. The slide <button type="button" class="slide-ref" data-slide="06-agent-communication-18" title="Show the slide"><em>Two Agents over A2A</em></button> shows the request that one server sends to the other. Run the next cells as they are : the helper cell contains <code>start_server</code>, <code>assistant_for</code>, <code>rpc</code> and <code>stop_servers</code>, <code>server_prelude</code> contains the imports, the model and the state, and <code>specialist_source</code> is the complete parts graph.</p>
+<p>In <code>coordinator_source</code>, fill the two blanks inside <code>coordinate</code>. The first blank is the key of a <code>/assistants/search</code> row that contains the assistant's id. The second blank is the JSON-RPC 2.0 request as a Python dict : the A2A 1.0 method name (not the legacy <code>message/send</code>), a user message in the A2A 1.0 shape with the <code>contextId</code>, and the Agent Server option that keeps the response history to this task. The message text is the last entry of <code>state[&quot;messages&quot;]</code>, and the cell has already set <code>context</code>. Step 3 checks the A2A 1.0 shape : the role value and parts without a <code>kind</code> key.</p>
+<p>The next code cell writes both sources to <code>graph.py</code> in the <code>parts</code> and <code>desk</code> runtime folders. <code>____</code> is a valid Python name, so <code>compile</code> accepts a blank you missed : PASS on <code>no blank left in the sources</code> shows that none is left, and PASS on <code>edited sources written</code> shows that the files exist and parse. The request itself is tested in Step 3. Agent Server needs the <code>server</code> dependency group. It runs on the classroom laptop and in a Codespace, and not on Colab ; there the cell raises a <code>RuntimeError</code>.</p>
 <p>Which of the two sources opens <code>service.db</code>, and how does the desk get its stock facts?</p>
 <hr>
 
 </section>
 <section class="step" id="step-2" data-step="2">
 <h2><span class="num">Step 2</span><span class="title">Agent cards</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="2" data-step="2"> Done</label></h2>
-<p>Fill the <code>assistant_id</code> parameter of the card request and run the cell. It starts the parts agent on port 2125 and the desk on 2124.</p>
+<p>A caller reads an agent card before it sends a task, because the card states what an assistant does and where to send work. The slide <button type="button" class="slide-ref" data-slide="06-agent-communication-16" title="Show the slide"><em>Agent Cards</em></button> shows the two addresses, and both need the assistant's UUID. The cell starts the parts agent on port 2125 and the desk on port 2124, finds each UUID with <code>assistant_for</code>, which calls <code>/assistants/search</code>, and requests each card.</p>
+<p>Fill the one blank, the value of the card query. It is the UUID of the assistant that the loop is handling, a name you can read on the <code>for</code> line. The cell can take a while, because <code>start_server</code> waits until the server answers on <code>/ok</code>.</p>
+<p>When it worked, the cell prints a <code>card :</code> line per agent with its URL, <code>JSONRPC</code> and version 1.0, and then PASS on <code>both cards advertise JSONRPC</code>. Inspect those lines before you send any task. An HTTP error from <code>raise_for_status</code> usually means the value is not a UUID : the server rejects a graph name. An <code>OSError</code> about the address means a server from an earlier run still uses the port. The cell stops both servers on any error, so you can run it again.</p>
 <p>Which id appears at the end of each card's <code>url</code> : the graph name or a UUID?</p>
 <hr>
 
 </section>
 <section class="step" id="step-3" data-step="3">
 <h2><span class="num">Step 3</span><span class="title">First task</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="3" data-step="3"> Done</label></h2>
-<p>Fill the context constructor, the method and the result key, then send the CT-400 visit request to the desk. The cell prints the desk's stored remote exchange.</p>
-<p>Which part do the two task ids share, and which part differs?</p>
+<p>This step sends the first task. The notebook sends it to the desk only, and the <code>coordinate</code> node on the desk calls the parts agent, as in module 06 demo04 · two-agents-over-a2a. The stored exchange then shows that the desk made that call itself.</p>
+<p>Fill three blanks. <code>context</code> needs a new random UUID, because Agent Server uses <code>contextId</code> as its thread id ; the cell already has the parentheses, so write only the name of the constructor. The <code>rpc</code> call needs the A2A 1.0 method, and the last bracket needs the key of the result that contains the task. Both are strings, so write them in quotes. The slide <button type="button" class="slide-ref" data-slide="06-agent-communication-17" title="Show the slide"><em>A2A Tasks</em></button> shows the method and the shape of its result.</p>
+<p>When it worked, <code>desk task state</code> shows the completed state, the handover names both parts with stock and depot, and <code>task ids</code> prints two different ids. A <code>KeyError</code> points at the result key. This cell is also the first test of your request from Step 1. If the desk reports a failed task or the cell stops with an error, read <code>server.log</code> in the <code>desk</code> runtime folder. The servers load <code>graph.py</code> when they start, so after a fix run the source-writing cell, then <code>stop_servers()</code>, then the cell of Step 2.</p>
+<p>Which id do the two tasks share, and which differs?</p>
 <hr>
 
 </section>
 <section class="step" id="step-4" data-step="4">
 <h2><span class="num">Step 4</span><span class="title">Same context</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="4" data-step="4"> Done</label></h2>
-<p>Send the follow-up with the saved <code>context</code> and no task id. Fill the method that fetches the new task by id.</p>
+<p>A conversation over A2A continues through its context : each new message starts a new task, and the server finds the earlier messages through <code>contextId</code>. The slide <button type="button" class="slide-ref" data-slide="06-agent-communication-18" title="Show the slide"><em>Two Agents over A2A</em></button> states this, and the slide <button type="button" class="slide-ref" data-slide="06-agent-communication-17" title="Show the slide"><em>A2A Tasks</em></button> describes what each response contains. The cell sends a follow-up to the desk, fetches the new task twice, as <code>fetched</code> and <code>whole</code>, and reads the thread state on both servers before and after the message, to count the served calls and tokens.</p>
+<p>Fill two blanks. The second argument of <code>send_params</code> is the value that keeps this message in the conversation of Step 3 ; a finished task id does not go here. The other blank is the A2A 1.0 method that fetches one task by id, again a string in quotes.</p>
+<p>When it worked, the <code>follow-up :</code> line answers &quot;those two parts&quot; although the message names no part, and <code>history lengths :</code> prints two numbers with the smaller first. A FAIL on <code>new task in same context</code>, or a reply that does not know which parts you mean, points at the first blank. The check <code>all served calls counted</code> looks for two new served calls from this run of the cell, one on each server, so you can run the cell again.</p>
+<p>Compare the answer artifacts with the keys that the fetched task returns. <code>historyScope=&quot;task&quot;</code> filters the response history for the requested task. It does not trim model input. <code>historyScope</code> is an Agent Server extension ; the A2A 1.0 field is <code>historyLength</code>, and another A2A server will ignore <code>historyScope</code>. The <code>kind</code> key in the response is a leftover from A2A 0.3 that Agent Server still sends.</p>
 <p>Which keys does <code>GetTask</code> return, and where is the answer text? How long is the history with the Agent Server option <code>historyScope=&quot;task&quot;</code> and without it? The A2A 1.0 field for this is <code>historyLength</code>, and <code>kind</code> is a leftover from A2A 0.3.</p>
 <hr>
 
 </section>
 <section class="step" id="step-5" data-step="5">
 <h2><span class="num">Step 5</span><span class="title">Shutdown</span><span class="grow"></span><label class="done"><input type="checkbox" data-unit="5" data-step="5"> Done</label></h2>
-<p>Run the final cell. It stops both servers and prints their combined calls and tokens. Call <code>stop_servers()</code> at once if a cell fails while a server runs. Each server writes <code>server.log</code> in its runtime folder ; read it when a task fails.</p>
+<p>Agent Servers keep running after a cell ends, and ports 2124 and 2125 stay in use until something stops them. The last code cell of the notebook, under <em>If time permits</em>, calls <code>stop_servers()</code>, which stops only the servers this notebook started. Run it after the optional work. It needs <code>server_usage</code> from Step 4, and server calls are counted from the persisted usage lists on both servers.</p>
+<p>When it worked, you see PASS on <code>both servers stopped</code> and on each port, and then the <code>metrics :</code> line with calls and tokens. Call <code>stop_servers()</code> at once if a cell fails while a server runs. Each server writes <code>server.log</code> in its runtime folder ; read it when a task fails.</p>
 <p>Are ports 2124 and 2125 released?</p>
 <hr>
 
@@ -1084,6 +1095,45 @@ a.ex-row:hover { border-color: var(--accent); }
 <blockquote>
 <p><code class="pill-demo pill-id">demo04</code><br><code class="pill-demo pill-desc">two-agents-over-a2a</code></p>
 </blockquote>
+</section>
+</foreignObject></svg></div></template>
+<template id="slide-06-agent-communication-16" data-css="slide-css-1" data-title="Agent Cards" data-module="Module 5 · Agent Communication" data-deck="slides/06-agent-communication.html#16"><div class="marpit"><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="1" data-class="default" data-theme="spiraltrain" class="default" style="--class:default;--theme:spiraltrain;" data-size="16:10"><div class="ml-eyebrow"><a>Agent Communication</a></div>
+<h1 id="agent-cards">Agent Cards</h1>
+<ul>
+<li>The card tells a caller what one assistant does and where to send tasks</li>
+<li>The installed server identifies an assistant by UUID, a long generated id :</li>
+</ul>
+<pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span>GET /.well-known/agent-card.json?assistant_id=&#x3C;uuid></span></span>
+<span class="line"><span>POST /a2a/&#x3C;uuid></span></span>
+<span class="line"><span></span></span></code></pre>
+<ul>
+<li>The server rejects a graph name with &quot;must be a UUID&quot;</li>
+<li><code>POST /assistants/search</code> returns the UUID for that graph id</li>
+<li>Default assistant UUIDs derive from the graph id with <code>uuid5</code></li>
+<li>A2A requires a <code>messages</code> key in the input schema</li>
+<li>This card has no security schemes and no signature, both defined in A2A 1.0</li>
+</ul>
+<blockquote>
+<p><code class="pill-demo pill-id">demo03b</code><br><code class="pill-demo pill-desc">agent-card</code></p>
+</blockquote>
+</section>
+</foreignObject></svg></div></template>
+<template id="slide-06-agent-communication-17" data-css="slide-css-1" data-title="A2A Tasks" data-module="Module 5 · Agent Communication" data-deck="slides/06-agent-communication.html#17"><div class="marpit"><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="1" data-class="default" data-theme="spiraltrain" class="default" style="--class:default;--theme:spiraltrain;" data-size="16:10"><div class="ml-eyebrow"><a>Agent Communication</a></div>
+<h1 id="a2a-tasks">A2A Tasks</h1>
+<ul>
+<li>Bus depot demo : the completed <code>SendMessage</code> response has <code>result.task</code> :
+<ul>
+<li><code>status.state</code> is <code>TASK_STATE_COMPLETED</code></li>
+<li>Artifacts contain the assistant text</li>
+</ul>
+</li>
+<li><code>GetTask</code> returns the task directly, with history and no artifacts</li>
+<li>On Agent Server, <code>contextId</code> is the thread id and must be a UUID</li>
+<li><code>historyScope</code> is an Agent Server option beside the A2A 1.0 <code>historyLength</code></li>
+<li>Responses still contain the A2A 0.3 field <code>kind</code></li>
+<li><code>SubscribeToTask</code> returns -32601, method not found, although the card sets streaming</li>
+<li><code>message/send</code>, the older method, unwraps the task and lowercases the state</li>
+</ul>
 </section>
 </foreignObject></svg></div></template>
 <dialog id="slide-dialog" class="slide-dialog" aria-labelledby="slide-dialog-title">

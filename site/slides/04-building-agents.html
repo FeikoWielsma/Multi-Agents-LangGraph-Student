@@ -38,10 +38,10 @@
 <li>A chat model accepts a list of messages and returns an <code>AIMessage</code></li>
 <li>Module 00 used four kinds of message :
 <ul>
-<li><code>SystemMessage</code> holds the standing instructions</li>
-<li><code>HumanMessage</code> holds the request</li>
-<li><code>AIMessage</code> holds the model's text and any <code>tool_calls</code></li>
-<li><code>ToolMessage</code> holds a result, linked to its request by <code>tool_call_id</code></li>
+<li><code>SystemMessage</code> contains the standing instructions</li>
+<li><code>HumanMessage</code> contains the request</li>
+<li><code>AIMessage</code> contains the model's text and any <code>tool_calls</code></li>
+<li><code>ToolMessage</code> contains a result, linked to its request by <code>tool_call_id</code></li>
 </ul>
 </li>
 <li><code>llm.bind_tools(tools)</code> sends the tool descriptions with every call</li>
@@ -256,7 +256,7 @@
 <div class="ml-eyebrow"><a>Building Agents</a></div>
 <h1 id="custom-agent-state">Custom Agent State</h1>
 <ul>
-<li><code>AgentState</code> holds the messages, and a subclass can add fields :
+<li><code>AgentState</code> contains the messages, and a subclass can add fields :
 <ul>
 <li><code>game_id</code>, the game this team works on</li>
 <li><code>model_calls</code>, a counter that middleware updates</li>
@@ -476,7 +476,7 @@
 <li>The handler receives the state and a typed <code>NodeError</code> :
 <ul>
 <li><code>error.node</code> names the failed node</li>
-<li><code>error.error</code> holds the exception</li>
+<li><code>error.error</code> is the exception</li>
 </ul>
 </li>
 <li>A returned <code>Command</code> updates state and picks the next node</li>

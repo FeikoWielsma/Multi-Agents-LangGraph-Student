@@ -1,4 +1,4 @@
-# Course setup : run this cell first.
+#@title Course setup : run this cell first
 # On the classroom laptop the key comes from .env in the repository root.
 # In Colab, add it under the key icon in the left sidebar as COURSE_API_KEY.
 import os

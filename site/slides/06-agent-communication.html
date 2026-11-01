@@ -13,8 +13,8 @@
 <ul>
 <li>Agents move facts in two ways :
 <ul>
-<li>A direct message goes to one named agent and holds only what that agent needs</li>
-<li>A shared board holds every key, and every agent can read all of it</li>
+<li>A direct message goes to one named agent and contains only what that agent needs</li>
+<li>A shared board has every key, and every agent can read all of it</li>
 </ul>
 </li>
 <li>The Designer can message the rules to the Coder, while the Testers write on the project board</li>
@@ -45,11 +45,11 @@
 <div class="ml-eyebrow"><a>Agent Communication</a></div>
 <h1 id="full-history">Full History</h1>
 <ul>
-<li>Full history gives the next agent every message the caller holds</li>
+<li>Full history gives the next agent every message the caller has</li>
 <li>A Coder given the whole chat reads the brief, the pitches that lost and every old bug report</li>
 <li>Each new message makes the next call larger</li>
 <li>A later agent can repeat a lookup that already sits in that history</li>
-<li>Bus depot demo : the receiver held the stock note, and its saved answer still left out the stock count</li>
+<li>Bus depot demo : the receiver had the stock note, and its saved answer still left out the stock count</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="4" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="4" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="31" data-size="16:10">
@@ -99,8 +99,8 @@
 <h1 id="parent-message-update">Parent Message Update</h1>
 <ul>
 <li><code>add_messages</code> merges the child's messages into the parent's list by id</li>
-<li>The Coder's list then holds the Designer's notes</li>
-<li>Bus depot demo : the receiver's list held the stock note, and the written answer still omitted it</li>
+<li>The Coder's list then contains the Designer's notes</li>
+<li>Bus depot demo : the receiver's list contained the stock note, and the written answer still omitted it</li>
 <li>A handoff made by a tool call must answer that call with a <code>ToolMessage</code></li>
 <li>The module 05 transfer tool refuses a call made beside other tools</li>
 <li>Neither rule applies to this node transfer, which has no pending tool call</li>
@@ -305,7 +305,7 @@
 <li>Bus depot demo : the completed <code>SendMessage</code> response has <code>result.task</code> :
 <ul>
 <li><code>status.state</code> is <code>TASK_STATE_COMPLETED</code></li>
-<li>Artifacts hold the assistant text</li>
+<li>Artifacts contain the assistant text</li>
 </ul>
 </li>
 <li><code>GetTask</code> returns the task directly, with history and no artifacts</li>
@@ -424,7 +424,7 @@
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">([</span><span style="color:#22863A">"rule_tester"</span><span style="color:#212121">, </span><span style="color:#22863A">"bot_tester"</span><span style="color:#212121">], </span><span style="color:#22863A">"gate"</span><span style="color:#212121">)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>defer=True</code> holds a node until the other pending nodes finish :</li>
+<li><code>defer=True</code> delays a node until the other pending nodes finish :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_node</span><span style="color:#212121">(</span><span style="color:#22863A">"gate"</span><span style="color:#212121">, gate, defer</span><span style="color:#D32F2F">=</span><span style="color:#1976D2">True</span><span style="color:#212121">)</span></span>
 <span class="line"><span style="color:#24292EFF">builder</span><span style="color:#212121">.</span><span style="color:#6F42C1">add_edge</span><span style="color:#212121">(</span><span style="color:#22863A">"rule_tester"</span><span style="color:#212121">, </span><span style="color:#22863A">"gate"</span><span style="color:#212121">)</span></span>

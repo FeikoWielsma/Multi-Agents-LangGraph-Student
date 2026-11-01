@@ -483,7 +483,7 @@
 <div class="ml-eyebrow"><a>Multi-Agent Patterns</a></div>
 <h1 id="fixed-handoffs">Fixed Handoffs</h1>
 <ul>
-<li>The transfer tool refuses a turn that holds other tool calls :
+<li>The transfer tool refuses a turn that has other tool calls :
 <ul>
 <li>Every other call in the turn still gets its result</li>
 <li>The model transfers alone on its next turn</li>
@@ -534,7 +534,7 @@
 <h1 id="skills">Skills</h1>
 <ul>
 <li>A skill is a pack of instructions that the agent loads into its own history</li>
-<li>The prompt holds only the names and descriptions of the packs</li>
+<li>The prompt contains only the names and descriptions of the packs</li>
 <li>demo05 on Veenhaven Bus :</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#6F42C1">@tool</span></span>
@@ -591,7 +591,7 @@
 <li>The developer fixes the order of the steps in edges</li>
 <li>Model steps handle writing and judgement : the Designer picks a twist, the Coder writes the logic</li>
 <li>Code steps handle known rules : the tests run, a gate reads the result</li>
-<li>A workflow node can hold a subagent, a router or a handoff</li>
+<li>A workflow node can contain a subagent, a router or a handoff</li>
 <li>Each node's input and update can be inspected in the state</li>
 </ul>
 </section>

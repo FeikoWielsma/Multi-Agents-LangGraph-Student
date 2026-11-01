@@ -18,7 +18,7 @@
 <thead>
 <tr>
 <th>key</th>
-<th>holds</th>
+<th>contains</th>
 <th>written by</th>
 </tr>
 </thead>
@@ -140,7 +140,7 @@
 <span class="line"></span></code></pre>
 <ul>
 <li>The caller sends a brief and receives only a verdict</li>
-<li>The checkpoints still hold every key, <code>code</code> included</li>
+<li>The checkpoints still contain every key, <code>code</code> included</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo01c</code><br><code class="pill-demo pill-desc">input-and-output</code></p>
@@ -232,7 +232,7 @@
 <div class="ml-eyebrow"><a>State Management</a></div>
 <h1 id="messagesstate">MessagesState</h1>
 <ul>
-<li>A chat model needs the whole conversation on every call, so the board holds a list of messages</li>
+<li>A chat model needs the whole conversation on every call, so the board has a list of messages</li>
 <li><code>MessagesState</code> is a ready schema with one key, <code>messages</code>, and its reducer <code>add_messages</code></li>
 <li>A subclass adds extra keys, such as <code>game</code></li>
 </ul>
@@ -496,7 +496,7 @@
 <span class="line"><span style="color:#6F42C1">print</span><span style="color:#212121">(snapshot.config[</span><span style="color:#22863A">"configurable"</span><span style="color:#212121">][</span><span style="color:#22863A">"checkpoint_id"</span><span style="color:#212121">])</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>values</code> holds the saved keys</li>
+<li><code>values</code> contains the saved keys</li>
 <li><code>next</code> names the nodes due next ; an empty <code>next</code> means the run finished</li>
 <li>A config with a <code>checkpoint_id</code> selects an older save</li>
 </ul>
@@ -651,7 +651,7 @@
 <h1 id="the-v2-stream-format">The v2 Stream Format</h1>
 <ul>
 <li><code>stream(..., version=&quot;v2&quot;)</code> emits every part in one dictionary format</li>
-<li><code>type</code> names the stream mode ; <code>data</code> holds its payload</li>
+<li><code>type</code> names the stream mode ; <code>data</code> is its payload</li>
 <li><code>ns</code> identifies the graph namespace</li>
 </ul>
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#D32F2F">for</span><span style="color:#24292EFF"> part </span><span style="color:#D32F2F">in</span><span style="color:#24292EFF"> graph</span><span style="color:#212121">.</span><span style="color:#6F42C1">stream</span><span style="color:#212121">(inputs, config,</span></span>

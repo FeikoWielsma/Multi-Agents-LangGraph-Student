@@ -22,7 +22,7 @@
 <li>LangGraph writes those steps as code :
 <ul>
 <li>Each step is a function, called a node</li>
-<li>A project board passes from node to node and holds the work so far</li>
+<li>A project board passes from node to node and contains the work so far</li>
 </ul>
 </li>
 <li><code>create_agent</code> from module 01 builds such a graph, and so do Deep Agents</li>
@@ -390,7 +390,7 @@
 <span class="line"><span style="color:#D32F2F">    return</span><span style="color:#6F42C1"> Command</span><span style="color:#212121">(update</span><span style="color:#D32F2F">=</span><span style="color:#212121">{</span><span style="color:#22863A">"assigned"</span><span style="color:#212121">: target}, goto</span><span style="color:#D32F2F">=</span><span style="color:#212121">target)</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>update</code> holds the keys to write ; <code>goto</code> names the next node</li>
+<li><code>update</code> lists the keys to write ; <code>goto</code> names the next node</li>
 <li>A node returning <code>Command</code> needs no conditional edge</li>
 <li>The <code>Command[Literal[...]]</code> return type adds its edges to the drawing</li>
 </ul>

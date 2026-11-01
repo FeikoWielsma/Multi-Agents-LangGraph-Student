@@ -476,7 +476,7 @@
 <pre class="shiki min-light" style="background-color:#ffffff;color:#24292eff" tabindex="0"><code><span class="line"><span style="color:#24292EFF">agent </span><span style="color:#D32F2F">=</span><span style="color:#6F42C1"> create_deep_agent</span><span style="color:#212121">(model</span><span style="color:#D32F2F">=</span><span style="color:#212121">llm, memory</span><span style="color:#D32F2F">=</span><span style="color:#212121">[</span><span style="color:#22863A">"/AGENTS.md"</span><span style="color:#212121">])</span></span>
 <span class="line"></span></code></pre>
 <ul>
-<li><code>AGENTS.md</code> holds standing rules for a project, in plain Markdown</li>
+<li><code>AGENTS.md</code> contains standing rules for a project, in plain Markdown</li>
 <li>Each path is loaded at the start of the run and appended to the system prompt</li>
 <li>HTML comments are removed before the text goes in</li>
 <li>Several sources are joined in the order given</li>
@@ -799,7 +799,7 @@
 <li>Veenhaven Bus desk, medians of three runs</li>
 <li>With bus tools the policy adds 152 input tokens and changes no median call count</li>
 <li>The largest run without controls : 5 <code>task</code> calls, 12 model calls, 21795 input tokens</li>
-<li>The cap held the largest capped run to 7 calls, and its blocked lookups left the stock out</li>
+<li>The cap limited the largest capped run to 7 calls, and its blocked lookups left the stock out</li>
 </ul>
 <blockquote>
 <p><code class="pill-demo pill-id">demo08d</code><br><code class="pill-demo pill-desc">delegation-with-specialists-only</code></p>
@@ -829,7 +829,7 @@
 <div class="ml-eyebrow"><a>Deep Agents</a></div>
 <h1 id="summarisation">Summarisation</h1>
 <ul>
-<li>A long run can fill the context window, the limit on what one call can hold</li>
+<li>A long run can fill the context window, the limit on what one call can read</li>
 <li>The default stack replaces old messages with a summary for the model :
 <ul>
 <li>The old messages go to <code>/conversation_history/{session}.md</code></li>

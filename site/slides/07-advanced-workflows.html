@@ -69,7 +69,7 @@
 <li>A pause requires a checkpointer to store the thread state and the payload</li>
 <li><code>invoke(..., version=&quot;v2&quot;)</code> returns the payload in <code>out.interrupts[0].value</code></li>
 <li>Plain <code>invoke</code> returns a dict with the payload under <code>&quot;__interrupt__&quot;</code></li>
-<li><code>out.value</code> holds the state</li>
+<li><code>out.value</code> is the state</li>
 <li><code>graph.get_state(cfg).next</code> names the paused node</li>
 </ul>
 <blockquote>
@@ -153,7 +153,7 @@
 </li>
 <li>Parallel nodes can pause in the same step :
 <ul>
-<li><code>out.interrupts</code> holds one <code>Interrupt</code> per node, each with its own <code>id</code></li>
+<li><code>out.interrupts</code> has one <code>Interrupt</code> per node, each with its own <code>id</code></li>
 <li>The resume value maps each <code>id</code> to its reply :</li>
 </ul>
 </li>
@@ -234,7 +234,7 @@
 <div class="ml-eyebrow"><a>Advanced Workflows</a></div>
 <h1 id="gating-agent-actions">Gating Agent Actions</h1>
 <ul>
-<li>The interrupt payload holds <code>action_requests</code> and <code>review_configs</code></li>
+<li>The interrupt payload contains <code>action_requests</code> and <code>review_configs</code></li>
 <li>Each action request has the tool <code>name</code> and the model's <code>args</code></li>
 <li><code>Command(resume={&quot;decisions&quot;: [...]})</code> returns one decision per request</li>
 <li>Each decision has a type :
