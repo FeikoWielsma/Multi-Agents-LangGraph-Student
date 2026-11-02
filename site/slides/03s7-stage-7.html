@@ -13,8 +13,8 @@
 <ul>
 <li>Four nodes join the flow, and the flow gets its end :
 <ul>
-<li>BC report, Workbook and One-pager : three tools run in parallel</li>
-<li>Final review : a human approves or returns comments</li>
+<li>BC report, Workbook and One-pager, <code>report</code>, <code>workbook</code> and <code>onepager</code> on the site : three tools run in parallel</li>
+<li>Final review, <code>final</code> on the site : a human chooses Approve the outputs or Return comments</li>
 </ul>
 </li>
 <li>Principles : parallel tools, deterministic reports, audit trail</li>
@@ -26,7 +26,7 @@
 <ul>
 <li>Fan-out : one node starts several nodes at the same time</li>
 <li>Fan-in : those nodes meet at one node, called the join</li>
-<li>Business case : Accept starts three tools, and the final review waits for all three</li>
+<li>Business case : Accept for reporting starts three tools, and the final review waits for all three</li>
 <li>Two nodes that write one key need a reducer, a function that combines the writes</li>
 </ul>
 </section>
@@ -75,9 +75,9 @@
 <div class="ml-eyebrow"><a>Stage 7 : Outputs and Sign-off</a></div>
 <h1 id="the-final-gate">The Final Gate</h1>
 <ul>
-<li>A human reads the three outputs together</li>
-<li>Approve : the flow ends with the business case, the proposition and the evidence trail</li>
-<li>Comments : the run returns to the leadership review with the comments in state</li>
+<li>A human reads the three outputs together, from the cards above the gate</li>
+<li>Approve the outputs : the flow ends with the business case, the proposition and the evidence trail</li>
+<li>Return comments : the run returns to the leadership review with the comments in state</li>
 <li>No output counts as final before this step</li>
 <li>The graph has four human review points, each a place where state can change</li>
 </ul>

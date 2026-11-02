@@ -13,8 +13,8 @@
 <ul>
 <li>Two nodes join the flow :
 <ul>
-<li>Data : a tool reads simulated JSON inputs, such as market size, cost estimates and trade spend</li>
-<li>Evidence : an LLM consolidates the results into one structured record</li>
+<li>Data, <code>read_data</code> on the site : a tool reads simulated JSON inputs, such as market size, cost estimates and trade spend</li>
+<li>Evidence, <code>consolidate</code> on the site : an LLM consolidates the results into one structured record</li>
 </ul>
 </li>
 <li>Principles : tool call, the tools loop, structured evidence, simulated against sourced</li>
@@ -159,6 +159,10 @@
 <tr>
 <td><code>claim</code></td>
 <td>one statement the case relies on</td>
+</tr>
+<tr>
+<td><code>gaps</code></td>
+<td>what the claim does not tell us</td>
 </tr>
 </tbody>
 </table>

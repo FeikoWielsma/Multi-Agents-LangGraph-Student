@@ -13,10 +13,10 @@
 <ul>
 <li>Six nodes join the flow :
 <ul>
-<li>Challenge : an LLM with a validation tool tests the case</li>
-<li>CEO, CMO and CFO : three personas review it in parallel</li>
-<li>Leadership : an LLM consolidates the verdicts</li>
-<li>Review : a human resolves disagreements, then revises or accepts</li>
+<li>Challenge, <code>challenge</code> on the site : an LLM with a validation tool tests the case</li>
+<li>CEO, CMO and CFO, <code>ceo</code>, <code>cmo</code> and <code>cfo</code> on the site : three personas review it in parallel</li>
+<li>Leadership, <code>leadership</code> on the site : an LLM consolidates the verdicts</li>
+<li>Review, <code>review</code> on the site : a human resolves disagreements, then chooses Revise the assumptions or Accept for reporting</li>
 </ul>
 </li>
 <li>Principles : maker-checker, parallel personas, conflicts, patterns and their cost, no approval authority</li>
@@ -128,7 +128,7 @@
 <li>Code can check any fact that a query can return</li>
 <li>The Comet Arcade tests are such a checker : they run the game, and the Coder reads what failed</li>
 <li>A check returns specific findings, and the maker receives them on the next attempt</li>
-<li>Business case : a validation tool repeats the calculation checks in code</li>
+<li>Business case : a validation tool repeats the calculation checks in code, and compares the proposition with the case</li>
 <li>A format rule can reject a correct paraphrase</li>
 <li>A pass proves only what the check tests :
 <ul>

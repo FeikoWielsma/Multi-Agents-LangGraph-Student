@@ -13,8 +13,8 @@
 <ul>
 <li>One node joins the flow, and the gate gains its loop :
 <ul>
-<li>Web research : a Deep Agent finds market signals and the top 3 competitors, with prices and features</li>
-<li>More research : the gate sends the run back, for at most 2 rounds</li>
+<li>Web research, <code>research</code> on the site : a Deep Agent finds market signals and the top 3 competitors, with prices and features</li>
+<li>Research more : the gate sends the run back, for at most 2 rounds</li>
 </ul>
 </li>
 <li>Principles : a Deep Agent plans, keeps files, uses subagents and tools, and works under a cap on untrusted web text</li>
@@ -79,7 +79,7 @@
 <li>Four limits apply in the flow, all in code :
 <ul>
 <li>At most 2 more rounds from the gate</li>
-<li>A cap on model calls inside one round</li>
+<li>A cap on searches in one run, and on model calls in one round</li>
 <li>A cap on pages read in one run</li>
 <li>A scope of one product, one country and three competitors</li>
 </ul>
