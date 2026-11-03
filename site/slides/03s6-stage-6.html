@@ -29,7 +29,7 @@
 <li>A multi-agent system splits one job across agents, each with its own context :
 <ul>
 <li>The context is everything a model can see on one call</li>
-<li>The CFO reads the numbers, the CMO the evidence and past launches</li>
+<li>Every seat reads the case in its prompt, and its tools differ : the CFO runs the checks, the CMO reads past launches</li>
 <li>The Leadership step reads only what the three report back</li>
 </ul>
 </li>
@@ -94,7 +94,7 @@
 <div class="ml-eyebrow"><a>Stage 6 : Challenge and Leadership</a></div>
 <h1 id="maker-checker">Maker-Checker</h1>
 <ul>
-<li>A maker writes, and a checker returns specific feedback</li>
+<li>Maker-checker : one step makes a result, and a separate step checks it</li>
 <li>The Case writer and the <code>calculate</code> step make the case, and <code>challenge</code> checks it :
 <ul>
 <li>An unsupported share or price premium</li>
@@ -104,7 +104,7 @@
 </li>
 <li>Debate gives a judge two proposals, and generate and filter keeps the candidates that pass : both are shapes of the same idea</li>
 <li>The check result decides, because two models that agree can both be wrong</li>
-<li>The checker here has no veto : its findings reach the seats and the person</li>
+<li>The checker here has no veto : its findings reach the seats and the person, and only a person sends the case back</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="5" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="5" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="9" data-size="16:10">
@@ -226,25 +226,25 @@
 <td>3</td>
 <td>A gate</td>
 <td>4</td>
-<td>0.0006</td>
+<td>0.0005</td>
 </tr>
 <tr>
 <td>4</td>
 <td>A Deep Agent, 2 rounds</td>
-<td>21</td>
-<td>0.0055</td>
+<td>20</td>
+<td>0.0051</td>
 </tr>
 <tr>
 <td>5</td>
 <td>Proposition and ranges</td>
-<td>14</td>
-<td>0.0048</td>
+<td>13</td>
+<td>0.0049</td>
 </tr>
 <tr>
 <td>6</td>
 <td>A checker and three seats, 2 reviews</td>
-<td>41</td>
-<td>0.0154</td>
+<td>44</td>
+<td>0.0159</td>
 </tr>
 </tbody>
 </table>

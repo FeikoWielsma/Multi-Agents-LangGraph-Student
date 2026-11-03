@@ -31,9 +31,11 @@
 <li>The model still chooses the next tool call</li>
 </ul>
 </li>
-<li><code>create_agent</code> from stage 2 is a small harness on the LangGraph runtime</li>
-<li>Deep Agents is a larger harness on <code>create_agent</code></li>
-<li>A Deep Agent is a compiled graph, so it fits in one node of a larger flow</li>
+<li>Middleware is code that runs before or after a model call or a tool call, such as a call limit</li>
+<li><code>create_agent</code> from stage 2 is a small harness : a model, tools and middleware</li>
+<li><code>create_deep_agent</code> calls <code>create_agent</code> with more middleware : to-dos, files, subagents, summaries</li>
+<li>A Deep Agent is a compiled graph, so it fits in one node : a graph inside a node is a subgraph</li>
+<li>Memory that outlasts a run needs a store ; this flow keeps its files in the run's state</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="3" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="3" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="6" data-size="16:10">
@@ -106,7 +108,12 @@
 </ul>
 </li>
 <li>A prompt asks the agent to stop, and a cap stops it</li>
-<li>At a cap code takes the tool off the model's list, so the model cannot call it, and the agent writes what it has</li>
+<li>Two kinds of cap :
+<ul>
+<li>In the agent : a spent tool leaves the model's list, a call limit ends the loop, and the agent hands back what it has</li>
+<li>Over the run : at 180 model calls the site stops the whole run, and no later step runs</li>
+</ul>
+</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="5" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="5" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="6" data-size="16:10">
