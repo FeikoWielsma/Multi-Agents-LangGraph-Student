@@ -11,16 +11,16 @@
 </style></head><body><div class="bespoke-marp-osc"><button data-bespoke-marp-osc="prev" tabindex="-1" title="Previous slide">Previous slide</button><span data-bespoke-marp-osc="page"></span><button data-bespoke-marp-osc="next" tabindex="-1" title="Next slide">Next slide</button><button data-bespoke-marp-osc="fullscreen" tabindex="-1" title="Toggle fullscreen (f)">Toggle fullscreen</button><button data-bespoke-marp-osc="overview" tabindex="-1" title="Toggle overview view (o)">Toggle overview view</button><button data-bespoke-marp-osc="presenter" tabindex="-1" title="Open presenter view (p)">Open presenter view</button></div><div id=":$p"><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="1" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="1" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="11" data-size="16:10"><div class="ml-eyebrow"><a>Stage 8 : Make It Yours</a></div>
 <h1 id="make-it-yours">Make It Yours</h1>
 <ul>
-<li>The flow is complete, and one node joins it : <code>evaluate</code>, after the last gate</li>
+<li>The flow is complete, and <code>evaluate</code> is added after the last gate</li>
 <li>This stage measures the flow, bounds its cost and changes it :
 <ul>
 <li>Evaluation : did a change make the flow better?</li>
 <li>Cost and injection : what a run spends and what can go wrong</li>
-<li>Production : how a flow on this site reaches real use</li>
+<li>Memory and tracing : what a later run reads, and the record of each run</li>
 <li>A change of your own</li>
 </ul>
 </li>
-<li>Principles : evaluating a flow, cost, injection, how this reaches production</li>
+<li>Principles : evaluating a flow, cost, injection, memory, tracing</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="2" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="2" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="11" data-size="16:10">
@@ -165,31 +165,30 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="7" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="7" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="11" data-size="16:10">
 <div class="ml-eyebrow"><a>Stage 8 : Make It Yours</a></div>
-<h1 id="production-agent-services">Production Agent Services</h1>
+<h1 id="long-term-memory">Long-Term Memory</h1>
 <ul>
-<li>The site is one lab for one room, and a service has more duties :
+<li>A checkpoint keeps one run, and a store keeps what a later run may read</li>
+<li>With Remember lessons across runs on, stage 8 adds two steps after your approval :
 <ul>
-<li>Any program can start a run over HTTP</li>
-<li>State is still there after the server restarts</li>
-<li>A score shows whether a change made the flow better</li>
-<li>A budget stops a run that spends too much</li>
+<li><code>lessons</code> : a model proposes up to 3 lessons from your edits and the failed checks</li>
+<li><code>remember</code> : a gate, where you keep, edit or drop each lesson</li>
 </ul>
 </li>
-<li>Agent Server is the program that serves LangGraph graphs and Deep Agents over HTTP</li>
-<li>It can run in LangChain's cloud, in a company's own infrastructure, or as a standalone container</li>
-<li>Operations ownership, region and compliance decide the choice</li>
+<li>What you keep goes into a LangGraph store with <code>store.put</code>, in the namespace <code>(&quot;lessons&quot;, your login)</code></li>
+<li>The next run's <code>plan</code> reads that namespace with <code>store.search</code>, and the result lists the lessons it read</li>
+<li>Nothing is remembered without your approval, and another login never reads yours</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="8" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="8" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="11" data-size="16:10">
 <div class="ml-eyebrow"><a>Stage 8 : Make It Yours</a></div>
-<h1 id="monitoring">Monitoring</h1>
+<h1 id="tracing-a-run">Tracing a Run</h1>
 <ul>
-<li>A trace is the record of one run : every model call, tool call, result and failure</li>
-<li>The Steps tab on the site is a small trace of one run</li>
-<li>LangSmith shows one timeline across a parent and its subagents</li>
-<li>Online evals score a sample of production runs automatically</li>
-<li>Dashboards track cost per run, latency, error rate and judge scores</li>
-<li>Alerts fire when a quality score falls ; a sample can miss a failure</li>
+<li>A trace is the record of one run : every node, model call, tool call, result and failure, in order</li>
+<li>The Steps tab is the site's own view of it, and LangSmith keeps the full record</li>
+<li>A live run shows Open in LangSmith in the steps and at the foot of the result</li>
+<li>Each leg is one trace : the run, the run after your choice, a rewind, a fork. The legs share one thread</li>
+<li>The link opens the trainer's LangSmith project, and a recording has no trace</li>
+<li>In production a team adds dashboards on cost, latency and errors, and online evals on a sample of runs</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="9" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="9" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="11" data-size="16:10">
@@ -240,6 +239,10 @@
 <tr>
 <td>Data source</td>
 <td>Simulated training data, My own figures or The web only : the graph changes with it</td>
+</tr>
+<tr>
+<td>Remember lessons across runs</td>
+<td>After <code>final</code> : <code>lessons</code>, then a gate, <code>remember</code></td>
 </tr>
 </tbody>
 </table>

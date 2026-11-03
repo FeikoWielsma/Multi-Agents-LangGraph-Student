@@ -25,16 +25,17 @@
 <div class="ml-eyebrow"><a>Stage 7 : Outputs and Sign-off</a></div>
 <h1 id="deterministic-reports">Deterministic Reports</h1>
 <ul>
-<li>The three outputs are code, with no model call :
+<li>The three output steps are code, with no model call :
 <ul>
-<li><code>report</code> : HTML with inline charts, scenarios, risks, sources and the leadership review</li>
+<li><code>report</code> : HTML with Plotly charts, scenarios, risks, sources and the leadership review</li>
 <li><code>workbook</code> : XLSX with assumptions, calculations, evidence references and overrides</li>
-<li><code>onepager</code> : HTML with customer, problem, promise, proof and differentiation</li>
+<li><code>onepager</code> : HTML and an A4 PDF with customer, problem, promise, proof and differentiation</li>
 </ul>
 </li>
 <li>A template fills from state, so each figure comes from <code>calculate</code></li>
 <li>Two runs on the same state give the same report</li>
 <li>Text from a model, a web page or a person is escaped before it enters a page</li>
+<li>The charts are drawn from JSON that code made, by the only script a report runs</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 800"><foreignObject width="1280" height="800"><section id="3" data-paginate="true" data-class="default" data-theme="spiraltrain" lang="C" class="default" data-marpit-pagination="3" style="--paginate:true;--class:default;--theme:spiraltrain;" data-marpit-pagination-total="5" data-size="16:10">
@@ -52,16 +53,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>HTML + Plotly charts</code></td>
-<td>HTML with inline SVG charts</td>
-<td>No script runs in a report</td>
-</tr>
-<tr>
-<td><code>HTML / PDF</code>, for the one-pager</td>
-<td>HTML only</td>
-<td>A browser can print it to PDF</td>
-</tr>
 <tr>
 <td><code>LLM: propose BC assumptions</code></td>
 <td>Inputs, <code>assumptions</code></td>
@@ -99,7 +90,7 @@
 <div class="ml-eyebrow"><a>Stage 7 : Outputs and Sign-off</a></div>
 <h1 id="the-final-gate">The Final Gate</h1>
 <ul>
-<li>A human reads the three outputs together, from the cards above the gate</li>
+<li>A human reads the outputs together, from the cards above the gate</li>
 <li>Approve the outputs : the flow ends with the business case, the proposition and the evidence trail</li>
 <li>Return comments : the run returns to <code>review</code> with the comments in state</li>
 <li>No output counts as final before this step</li>
